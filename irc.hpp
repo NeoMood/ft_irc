@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 20:07:31 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/04 21:17:58 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/06 16:37:08 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,18 +21,28 @@
 #include <cstdio>
 #include <poll.h>
 #include <vector>
+#include <string>
+#include <stdexcept>
 
-#define NB_QUEUE 5
 #define BUFFER_SIZE 1024
 
 class irc_server{
 	private:
 		int	socket_fd;
+		int	portno;
+		int	accept_fd;
+		std::vector<pollfd> vec_fd;
     public:
-        irc_server();
-        ~irc_server();
-        void init_sockets(char **argv);
-		void band_sockets(void);
 		void setSocketFd(int socket_fd);
 		int	getSocketFd(void);
+        irc_server();
+        ~irc_server();
+        void init_sockets(void);
+		void bind_sockets(void);
+		void listenToIncomingconnection(void);
+		void AcceptToIncomingconnection(void);
+		void receivingmessages(void);
+		void multipleconnection(void);
+		void check_port(char **argv);
+		void createServer(void);
 };
