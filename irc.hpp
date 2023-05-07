@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 20:07:31 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/06 16:37:08 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/07 18:08:34 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <stdexcept>
 
 #define BUFFER_SIZE 1024
+#define	EXIT_FAILURE 1
 
 class irc_server{
 	private:
@@ -41,8 +42,9 @@ class irc_server{
 		void bind_sockets(void);
 		void listenToIncomingconnection(void);
 		void AcceptToIncomingconnection(void);
-		void receivingmessages(void);
 		void multipleconnection(void);
 		void check_port(char **argv);
 		void createServer(void);
+		void ReusableSocket(void);
+		void non_blocking(void);
 };
