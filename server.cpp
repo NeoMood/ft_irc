@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 15:26:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/07 20:51:36 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/09 18:49:26 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,18 @@
 
 void irc_server::check_port(char **argv)
 {
-    int port = std::stoi(argv[1]);
-    if (port < 1024 || port > 65535)
+    // int port = std::stoi(argv[1]);
+	// int	pass = std::stoi(argv[2]);
+	std::string port = argv[1];
+	std::string password = argv[2];
+    if (port < "1024" || port > "65535")
         throw std::out_of_range("Port number out of the bounds");
-    else {
-        this->portno = std::stoi(argv[1]);
-    }
+	for (int i = 0; password[i]; i++){
+		if (password[i] < '0' || password[i] > '9')
+			throw std::invalid_argument("Password must be a digit");
+	}
+    this->portno = std::stoi(port);
+    this->passwd = std::stoi(password);
 }
 
 void    irc_server::init_sockets(void){
@@ -68,58 +74,65 @@ void	irc_server::listenToIncomingconnection(){
 	}
 }
 
+void	irc_server::AcceptToIncomingconnection(void)
+{
+	for (size_t i = 0; i < vec_fd.size(); i++)
+	{
+		if (vec_fd[i].revents & POLLIN)
+		{
+			if (vec_fd[i].fd == socket_fd)
+			{
+				struct sockaddr_in client_addr;
+				socklen_t client_len = sizeof(client_addr);
+				accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
+				if (accept_fd == -1){
+					std::cerr << "accept: " << std::strerror(errno) << std::endl;
+					exit (EXIT_FAILURE);
+				}
+				char client_ip[INET_ADDRSTRLEN];
+				std::cout << "New connection: " << inet_ntop(AF_INET,&(client_addr.sin_addr),client_ip, INET_ADDRSTRLEN) << std::endl;
+				pollfd client_fd;
+
+				client_fd.fd = accept_fd;
+				client_fd.events = POLLIN;
+				vec_fd.push_back(client_fd);
+			}
+			else
+			{
+				char buffer[BUFFER_SIZE] = {0};
+				int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
+				if (nbytes == -1) {
+					std::cerr << "recv: " << std::strerror(errno) << std::endl;
+					exit(EXIT_FAILURE);
+				}
+				else if (nbytes == 0) {
+					std::cout << "See you later" << std::endl;
+					exit (EXIT_SUCCESS);
+				}
+				else {
+					std::cout << "Received: " << buffer << std::endl;
+				}
+			}
+		}
+	}
+}
+
 void	irc_server::multipleconnection(){
 	pollfd server_fd;
+
 	server_fd.fd = socket_fd;
 	server_fd.events = POLLIN;
 	vec_fd.push_back(server_fd);
 	std::cout << "IRC Server is starting..." << std::endl;
 	while (true)
 	{
-		if (poll(&vec_fd[0], sizeof(vec_fd), -1) == -1){
+		poll_fds = poll(&vec_fd[0], vec_fd.size(), -1);
+		if ( poll_fds == -1){
 			std::cerr << "poll: " << std::strerror(errno) << std::endl;
 			close (socket_fd);
 			exit (EXIT_FAILURE);
 		}
-		for (size_t i = 0; i < vec_fd.size(); i++)
-		{
-			if (vec_fd[i].revents & POLLIN)
-			{
-				if (vec_fd[i].fd == socket_fd)
-				{
-					struct sockaddr_storage client_addr;
-					socklen_t client_len = sizeof(client_addr);
-					accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
-					if (accept_fd == -1){
-						std::cerr << "accept: " << std::strerror(errno) << std::endl;
-						exit (EXIT_FAILURE);
-					}
-					std::cout << "New connection!" << std::endl;
-					pollfd client_fd;
-					client_fd.fd = accept_fd;
-					client_fd.events = POLLIN;
-					vec_fd.push_back(client_fd);
-				}
-				else
-				{
-					char buffer[BUFFER_SIZE];
-					int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
-					if (nbytes == -1) {
-						std::cerr << "recv: " << std::strerror(errno) << std::endl;
-						exit(EXIT_FAILURE);
-					}
-					else if (nbytes == 0) {
-						std::cout << "Client disconnected" << std::endl;
-						close(vec_fd[i].fd);
-						vec_fd.erase(vec_fd.begin() + i);
-						i--;
-					}
-					else {
-						std::cout << "Received: " << buffer << std::endl;
-					}
-				}
-			}
-		}
+		AcceptToIncomingconnection();
 	}
 }
 

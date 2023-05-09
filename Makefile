@@ -6,13 +6,13 @@
 #    By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/01 20:07:11 by yamzil            #+#    #+#              #
-#    Updated: 2023/05/05 16:23:17 by yamzil           ###   ########.fr        #
+#    Updated: 2023/05/09 15:44:42 by yamzil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = ircserv
 
-CPPFLAGS = -Wall -Werror -Wextra -std=c++98
+CPPFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address -g
 
 SRC = 	server.cpp\
 		main.cpp \

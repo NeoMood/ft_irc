@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 20:07:31 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/07 18:08:34 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/09 18:11:35 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@ class irc_server{
 	private:
 		int	socket_fd;
 		int	portno;
+		int	passwd;
 		int	accept_fd;
+		int	poll_fds;
 		std::vector<pollfd> vec_fd;
     public:
 		void setSocketFd(int socket_fd);
@@ -47,4 +49,5 @@ class irc_server{
 		void createServer(void);
 		void ReusableSocket(void);
 		void non_blocking(void);
+		// void recievingmessage(void);
 };

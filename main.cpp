@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:06:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/07 20:53:07 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/09 16:53:11 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,3 +29,8 @@ int	main(int argc, char **argv){
         }
 	}
 }
+
+
+// NICKNAME must not contain SPACE, COMMA, ASTRIX, QUESTIN MARK, @ and DOT
+//     MUST NOT START WITH $, :, #, &
+// CHANNEL NAME MUST NOT CONTAIN SPACE , CTRL-G, COMMA , 
