@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 20:07:31 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/09 18:11:35 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/14 00:51:34 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,21 +23,33 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include "client.hpp"
+#include <map>
+#include <cstring>
+#include <sstream>
+
 
 #define BUFFER_SIZE 1024
 #define	EXIT_FAILURE 1
 
+#pragma	once
+
 class irc_server{
 	private:
+		bool	isregistred;
 		int	socket_fd;
 		int	portno;
-		int	passwd;
+		std::string	passwd;
 		int	accept_fd;
 		int	poll_fds;
 		std::vector<pollfd> vec_fd;
     public:
+	    std::vector<std::string> full_command;
+		std::map<int, Client>	clients;
 		void setSocketFd(int socket_fd);
+		void setPassword(std::string passwd);
 		int	getSocketFd(void);
+		std::string	getPassword(void);
         irc_server();
         ~irc_server();
         void init_sockets(void);
@@ -50,4 +62,7 @@ class irc_server{
 		void ReusableSocket(void);
 		void non_blocking(void);
 		// void recievingmessage(void);
+
+	//  COMMAND FUNCTION
+		void PASS(std::vector<std::string>& full_command, Client &client);
 };

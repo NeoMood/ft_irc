@@ -6,27 +6,12 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 15:26:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/09 18:49:26 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/14 00:51:01 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "irc.hpp"
-
-void irc_server::check_port(char **argv)
-{
-    // int port = std::stoi(argv[1]);
-	// int	pass = std::stoi(argv[2]);
-	std::string port = argv[1];
-	std::string password = argv[2];
-    if (port < "1024" || port > "65535")
-        throw std::out_of_range("Port number out of the bounds");
-	for (int i = 0; password[i]; i++){
-		if (password[i] < '0' || password[i] > '9')
-			throw std::invalid_argument("Password must be a digit");
-	}
-    this->portno = std::stoi(port);
-    this->passwd = std::stoi(password);
-}
+#include "client.hpp"
 
 void    irc_server::init_sockets(void){
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -76,6 +61,8 @@ void	irc_server::listenToIncomingconnection(){
 
 void	irc_server::AcceptToIncomingconnection(void)
 {
+	Client	Client_data;
+	
 	for (size_t i = 0; i < vec_fd.size(); i++)
 	{
 		if (vec_fd[i].revents & POLLIN)
@@ -91,8 +78,14 @@ void	irc_server::AcceptToIncomingconnection(void)
 				}
 				char client_ip[INET_ADDRSTRLEN];
 				std::cout << "New connection: " << inet_ntop(AF_INET,&(client_addr.sin_addr),client_ip, INET_ADDRSTRLEN) << std::endl;
-				pollfd client_fd;
 
+				// add new clients to map
+
+				Client_data.setfd_number(accept_fd);
+				Client_data.setip_adress(inet_ntoa(client_addr.sin_addr));
+				clients.insert(std::make_pair(accept_fd, Client_data));
+
+				pollfd client_fd;
 				client_fd.fd = accept_fd;
 				client_fd.events = POLLIN;
 				vec_fd.push_back(client_fd);
@@ -110,7 +103,24 @@ void	irc_server::AcceptToIncomingconnection(void)
 					exit (EXIT_SUCCESS);
 				}
 				else {
-					std::cout << "Received: " << buffer << std::endl;
+					Client	client;
+					std::string message(buffer);
+					if (message.size() > message.max_size()){
+						std::cerr << "Message Buffer low" << std::endl;
+					}
+					size_t	pos = message.find(" ");
+					if (pos != std::string::npos){
+						std::string	command = message.substr(0, pos);
+						full_command.push_back(command);
+						std::string	parameters = message.substr(pos + 1, message.length() - pos);
+						full_command.push_back(parameters);
+						if (!command.compare(0, command.length(), "PASS"))
+							PASS(full_command, client);
+							
+					}
+					else{
+						std::cerr << "Invalid" << std::endl;
+					}
 				}
 			}
 		}
@@ -144,11 +154,32 @@ void	irc_server::setSocketFd(int socket_fd){
 	this->socket_fd = socket_fd;
 }
 
+void	irc_server::setPassword(std::string passwd){
+	this->passwd = passwd;
+}
+
+std::string	irc_server::getPassword(){
+	return(this->passwd);
+}
 
 irc_server::irc_server(){
-	
 }
 
 irc_server::~irc_server(){
-	
 }
+
+void irc_server::PASS(std::vector<std::string>& full_command, Client &client)
+{
+	(void) client;
+	if (full_command[1] != this->passwd){
+		std::cerr << "Error: Invalid Password" << std::endl;
+	}
+	else if (full_command[1] == this->passwd){
+		
+	}
+}
+
+// void	irc_server::PassCommand(std::map<std::string , std::string> commands){
+// 	(void) commands;
+// 	std::cout << "Called from base class" << std::endl;
+// }
