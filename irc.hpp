@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 20:07:31 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/14 00:51:34 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/15 23:04:04 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@
 
 class irc_server{
 	private:
-		bool	isregistred;
 		int	socket_fd;
 		int	portno;
 		std::string	passwd;
@@ -45,7 +44,8 @@ class irc_server{
 		std::vector<pollfd> vec_fd;
     public:
 	    std::vector<std::string> full_command;
-		std::map<int, Client>	clients;
+		std::map<int, Client>	guest;
+		std::map<int, Client>	connected;
 		void setSocketFd(int socket_fd);
 		void setPassword(std::string passwd);
 		int	getSocketFd(void);
@@ -55,7 +55,8 @@ class irc_server{
         void init_sockets(void);
 		void bind_sockets(void);
 		void listenToIncomingconnection(void);
-		void AcceptToIncomingconnection(void);
+		void AcceptToIncomingconnection(Client& Client_data);
+		void send_message(int fd, std::string message);
 		void multipleconnection(void);
 		void check_port(char **argv);
 		void createServer(void);
@@ -64,5 +65,5 @@ class irc_server{
 		// void recievingmessage(void);
 
 	//  COMMAND FUNCTION
-		void PASS(std::vector<std::string>& full_command, Client &client);
+		void	PASS(std::vector<std::string>& full_command, Client &client);
 };

@@ -6,7 +6,7 @@
 #    By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/01 20:07:11 by yamzil            #+#    #+#              #
-#    Updated: 2023/05/12 23:37:20 by yamzil           ###   ########.fr        #
+#    Updated: 2023/05/15 18:41:11 by yamzil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,6 +18,7 @@ SRC =	server.cpp\
 		main.cpp\
 		client.cpp\
 		utils.cpp\
+		commands.cpp\
 		
 
 INC =	irc.hpp\

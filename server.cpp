@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 15:26:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/14 00:51:01 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/15 23:03:40 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,75 +59,70 @@ void	irc_server::listenToIncomingconnection(){
 	}
 }
 
-void	irc_server::AcceptToIncomingconnection(void)
+void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 {
-	Client	Client_data;
-	
+	char buffer[BUFFER_SIZE];
 	for (size_t i = 0; i < vec_fd.size(); i++)
 	{
-		if (vec_fd[i].revents & POLLIN)
+		if (vec_fd[i].revents & POLLIN && i == 0)
 		{
-			if (vec_fd[i].fd == socket_fd)
-			{
-				struct sockaddr_in client_addr;
-				socklen_t client_len = sizeof(client_addr);
-				accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
-				if (accept_fd == -1){
-					std::cerr << "accept: " << std::strerror(errno) << std::endl;
-					exit (EXIT_FAILURE);
-				}
-				char client_ip[INET_ADDRSTRLEN];
-				std::cout << "New connection: " << inet_ntop(AF_INET,&(client_addr.sin_addr),client_ip, INET_ADDRSTRLEN) << std::endl;
-
-				// add new clients to map
-
-				Client_data.setfd_number(accept_fd);
-				Client_data.setip_adress(inet_ntoa(client_addr.sin_addr));
-				clients.insert(std::make_pair(accept_fd, Client_data));
-
-				pollfd client_fd;
-				client_fd.fd = accept_fd;
-				client_fd.events = POLLIN;
-				vec_fd.push_back(client_fd);
+			struct sockaddr_in client_addr;
+			socklen_t client_len = sizeof(client_addr);
+			accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
+			if (accept_fd == -1){
+				std::cerr << "accept: " << std::strerror(errno) << std::endl;
+				exit (EXIT_FAILURE);
 			}
-			else
-			{
-				char buffer[BUFFER_SIZE] = {0};
-				int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
-				if (nbytes == -1) {
-					std::cerr << "recv: " << std::strerror(errno) << std::endl;
-					exit(EXIT_FAILURE);
-				}
-				else if (nbytes == 0) {
-					std::cout << "See you later" << std::endl;
-					exit (EXIT_SUCCESS);
-				}
-				else {
-					Client	client;
-					std::string message(buffer);
-					if (message.size() > message.max_size()){
-						std::cerr << "Message Buffer low" << std::endl;
-					}
-					size_t	pos = message.find(" ");
-					if (pos != std::string::npos){
-						std::string	command = message.substr(0, pos);
-						full_command.push_back(command);
-						std::string	parameters = message.substr(pos + 1, message.length() - pos);
-						full_command.push_back(parameters);
-						if (!command.compare(0, command.length(), "PASS"))
-							PASS(full_command, client);
-							
-					}
-					else{
-						std::cerr << "Invalid" << std::endl;
-					}
-				}
-			}
+			Client_data.setfd_number(accept_fd);
+			Client_data.setip_adress(inet_ntoa(client_addr.sin_addr));
+			guest.insert(std::make_pair(accept_fd, Client_data));
+			pollfd client_fd;
+			client_fd.fd = accept_fd;
+			client_fd.events = POLLIN;
+			vec_fd.push_back(client_fd);
 		}
+		else if (vec_fd[i].revents & POLLIN )
+		{
+			std::memset(&buffer, 0, sizeof(buffer));
+			int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
+			if (nbytes == -1) {
+				std::cerr << "recv: " << std::strerror(errno) << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			else if (nbytes == 0) {
+				close(vec_fd[i].fd);
+				vec_fd.erase(vec_fd.begin() + i);
+				std::cout << "See you later" << std::endl;
+			}
+			else 
+			{
+				std::string message(buffer);
+				std::cout << message << std::endl;
+				if (message.size() > message.max_size()){
+					std::cerr << "Message Buffer low" << std::endl;
+				}
+				size_t	pos = message.find(" ");
+				if (pos != std::string::npos){
+					std::string	command = message.substr(0, pos);
+					full_command.push_back(command);
+					std::string	parameters = message.substr(pos + 1, message.length() - pos - 2);
+					full_command.push_back(parameters);
+					if (!command.compare(0, command.length(), "PASS")){
+						PASS(full_command, Client_data);
+					}
+						
+				}
+				else{
+					std::cerr << "Invalid" << std::endl;
+				}
+			}
+		}	
 	}
 }
 
+
 void	irc_server::multipleconnection(){
+	Client	Client_data;
 	pollfd server_fd;
 
 	server_fd.fd = socket_fd;
@@ -142,7 +137,7 @@ void	irc_server::multipleconnection(){
 			close (socket_fd);
 			exit (EXIT_FAILURE);
 		}
-		AcceptToIncomingconnection();
+		AcceptToIncomingconnection(Client_data);
 	}
 }
 
@@ -167,19 +162,3 @@ irc_server::irc_server(){
 
 irc_server::~irc_server(){
 }
-
-void irc_server::PASS(std::vector<std::string>& full_command, Client &client)
-{
-	(void) client;
-	if (full_command[1] != this->passwd){
-		std::cerr << "Error: Invalid Password" << std::endl;
-	}
-	else if (full_command[1] == this->passwd){
-		
-	}
-}
-
-// void	irc_server::PassCommand(std::map<std::string , std::string> commands){
-// 	(void) commands;
-// 	std::cout << "Called from base class" << std::endl;
-// }
