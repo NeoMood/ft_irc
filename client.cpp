@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/15 22:50:55 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/16 12:19:13 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,16 @@ Client::~Client(){
     
 }
 
-void    Client::setName(std::string Name){
-    this->Name = Name;
+void    Client::setName(std::string _Name){
+    this->Name = _Name;
 }
 
-void    Client::setip_adress(std::string ip_adress){
-    this->ip_adress = ip_adress;
+void    Client::setip_adress(std::string _ip_adress){
+    this->ip_adress = _ip_adress;
 }
 
-void    Client:: setfd_number(int fd_number){
-    this->fd_number = fd_number;
+void    Client:: setfd_number(int _fd_number){
+    this->fd_number = _fd_number;
 }
 
 std::string Client::getName(void){
