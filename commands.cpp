@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/14 21:54:29 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/17 22:25:53 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/17 22:58:28 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,15 +39,10 @@ void irc_server::NICK(std::string paramters, Client &client)
 	if (paramters.length() == 0){
 		send_message(client.getfd_number(), ERR_NONICKNAMEGIVEN(client.getName()));
 	}
-	else if (client.getnicknamesited() == true){
-		send_message(client.getfd_number(), ERR_NICKNAMEINUSE(paramters));
-	}
 	else if (check_param(paramters.c_str(), client) && client.getisregistred()){
 		if (nicknames.find(paramters) == nicknames.end()){
 			client.setName(paramters);
-			client.setnicknamesited(true);
 			nicknames.insert(paramters);
-			std::cout << "client name: " << client.getName() << std::endl;
 		}
 		else{
 			send_message(client.getfd_number(), ERR_NICKNAMEINUSE(paramters));
