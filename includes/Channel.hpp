@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <string>
+#include "../client.hpp"
 
 // Numeric Replies:
 
@@ -18,6 +19,17 @@
 // # define ERR_TOOMANYTARGETS
 // # define ERR_UNAVAILRESOURCE
 
-class Channel {
+// Command: JOIN
+//    Parameters: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] )
+//                / "0"
 
+class Channel {
+    private:
+        std::string __name;
+        std::string __key;
+        Client      *__users;
+        Client      *__banned_users;
+        int         __online_users;
+    public:
+        Channel();
 };
