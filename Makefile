@@ -6,7 +6,7 @@
 #    By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/01 20:07:11 by yamzil            #+#    #+#              #
-#    Updated: 2023/05/15 18:41:11 by yamzil           ###   ########.fr        #
+#    Updated: 2023/05/17 21:12:33 by yamzil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ SRC =	server.cpp\
 		commands.cpp\
 		
 
-INC =	irc.hpp\
+INC =	server.hpp\
 		client.hpp\
 
 OBJ = $(SRC:.cpp=.o)

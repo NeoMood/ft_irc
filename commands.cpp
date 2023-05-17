@@ -6,55 +6,51 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/14 21:54:29 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/16 17:11:53 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/17 22:25:53 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "irc.hpp"
+#include "server.hpp"
 #include "client.hpp"
 
-void irc_server::PASS(std::vector<std::string>& full_command, Client &client)
+void irc_server::PASS(std::string paramters, Client &client)
 {
-	const std::string	password = full_command[1];
-	if (password == this->passwd && client.getisregistred() == false)
-	{
-		send_message(client.getfd_number(), "Authentication successful. Please provide a nickname.\n");
+	if (paramters.length() == 0){
+		send_message(client.getfd_number(), ERR_NEEDMOREPARAMS(client.getName(), "PASS"));
+		return;
+	}
+	else if (paramters != this->passwd){
+		send_message(client.getfd_number(), ERR_PASSWDMISMATCH(client.getName()));
+		return;
+	}
+	else if (paramters == this->passwd && client.getisregistred() == false){
+		send_message(client.getfd_number(),"Password approved, you can set a nickname\n");
 		client.setisregistred(true);
 		return ;
-		
 	}
-	if (client.getisregistred() == true){
-		send_message(client.getfd_number(), "Error: Client already registred.\n");
-		// std::cout << client.getfd_number() << std::endl;
+	else if (client.getisregistred() == true){
+		send_message(client.getfd_number(), ERR_ALREADYREGISTRED(client.getName()));
 		return ;
 	}
-	full_command.clear();
 }
 
-void irc_server::NICK(std::vector<std::string>& full_command, Client &client)
+void irc_server::NICK(std::string paramters, Client &client)
 {
-	const char *nickname = full_command[1].c_str();
-	char x = nickname[0];
-	for (size_t i = 0; nickname[i]; i++){
-		if (nickname[i] == ',' || nickname[i] == '*' || nickname[i] == '?' || nickname[i] == '@' || nickname[i] == '.'){
-			send_message(client.getfd_number(), "Error: Nickname has invalid character\n");
-			full_command.clear();
-			return ;
+	if (paramters.length() == 0){
+		send_message(client.getfd_number(), ERR_NONICKNAMEGIVEN(client.getName()));
+	}
+	else if (client.getnicknamesited() == true){
+		send_message(client.getfd_number(), ERR_NICKNAMEINUSE(paramters));
+	}
+	else if (check_param(paramters.c_str(), client) && client.getisregistred()){
+		if (nicknames.find(paramters) == nicknames.end()){
+			client.setName(paramters);
+			client.setnicknamesited(true);
+			nicknames.insert(paramters);
+			std::cout << "client name: " << client.getName() << std::endl;
 		}
-		else if (std::strlen(nickname) >= 9){
-			send_message(client.getfd_number(), "Error: Nickname longer than 9 character\n");
-			full_command.clear();
-			return ;
-		}
-		else if (x == '$' || x == ':' || x == '#' || x == '&'){
-			send_message(client.getfd_number(), "Error: Nickname has invalid character\n");
-			full_command.clear();
-			return ;
+		else{
+			send_message(client.getfd_number(), ERR_NICKNAMEINUSE(paramters));
 		}
 	}
-	if (client.getisregistred()){
-		full_command.clear();
-		client.setName(full_command[1]);
-	}
-	std::cout << "Nickname is :" << client.getName() << std::endl;
 }

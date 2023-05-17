@@ -6,11 +6,11 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 15:26:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/16 17:03:12 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/17 22:04:01 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "irc.hpp"
+#include "server.hpp"
 #include "client.hpp"
 
 void    irc_server::init_sockets(void){
@@ -87,7 +87,6 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 			int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
 			if (nbytes == -1) {
 				std::cerr << "recv: " << std::strerror(errno) << std::endl;
-				// exit(EXIT_FAILURE);
 			}
 			else if (nbytes == 0) {
 				close(vec_fd[i].fd);
@@ -107,10 +106,10 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 					std::string	parameters = message.substr(pos + 1, message.length() - pos - 2);
 					full_command.push_back(parameters);
 					if (!command.compare(0, command.length(), "PASS")){
-						PASS(full_command, guest[vec_fd[i].fd]);
+						PASS(parameters, guest[vec_fd[i].fd]);
 					}
 					else if (!command.compare(0, command.length(), "NICK")){
-						NICK(full_command, guest[vec_fd[i].fd]);
+						NICK(parameters, guest[vec_fd[i].fd]);
 					}
 				}
 				else{

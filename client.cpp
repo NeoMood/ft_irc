@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/16 12:19:13 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/17 17:51:23 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 
 Client::Client(){
     this->isregistred = false;
+    this->nicknamesited = false;
 }
 
 Client::~Client(){
@@ -45,6 +46,14 @@ std::string Client::getName(void){
 
 void	Client::setisregistred(bool _isregistred){
    this->isregistred = _isregistred;
+}
+
+void	Client::setnicknamesited(bool _nicknamesited){
+   this->nicknamesited = _nicknamesited;
+}
+
+bool    Client::getnicknamesited(){
+    return(this->nicknamesited);
 }
 
 bool    Client::getisregistred(){

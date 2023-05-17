@@ -6,11 +6,11 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:06:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/16 17:06:18 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/17 21:56:45 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "irc.hpp"
+#include "server.hpp"
 
 int	main(int argc, char **argv){
 	if (argc == 3){
