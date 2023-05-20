@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:35:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 00:58:16 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 03:16:00 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Client{
     private:
         bool    PasswordApproved;
         bool    NicknameSited;
+        bool    UsernameSited;
         std::string Nickname;
         std::string	IPAddress;
         std::string UserName;
@@ -51,6 +52,7 @@ class Client{
         ~Client();
     // Setters
         void	setNicknameSited(bool _Nicknamesited);
+        void	setUsernameSited(bool _Usernamesited);
 		void	setIPAddress(std::string _IPAdresss);
         void    setHostname(std::string _hostname);
         void    setRealName(std::string _realname);
@@ -61,6 +63,7 @@ class Client{
         void	setNickname(std::string Nickname);
     // Getters
         bool		getNickNameSited(void);
+        bool		getUserNameSited(void);
         int			getFdNumber(void);
         bool		getPasswordApproved(void);
         std::string	getNickname(void);

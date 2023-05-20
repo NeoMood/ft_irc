@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 02:25:21 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 03:39:13 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,9 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 				size_t	pos = message.find(" ");
 				if (pos != std::string::npos){
 					std::string	command = message.substr(0, pos);
+					for (std::string::iterator it = command.begin(); it != command.end(); ++it) {
+        				*it = std::toupper(*it);
+    				}
 					full_command.push_back(command);
 					std::string	parameters = message.substr(pos + 1, message.length() - pos - 2);
 					full_command.push_back(parameters);
@@ -181,9 +184,8 @@ void irc_server::PASS(std::string paramters, Client &client)
 		return;
 	}
 	else if (paramters == this->passwd && !client.getPasswordApproved()){
-		send_message(client.getFdNumber(),"Password approved, you can set a nickname\n");
+		std::cout << "Password approved, you can set a nickname" << std::endl;
 		client.setPasswordApproved(true);
-		std::cout << "gere" << client.getPasswordApproved() << std::endl;
 		return ;
 	}
 	else if (client.getPasswordApproved() == true){
@@ -200,8 +202,8 @@ void irc_server::NICK(std::string paramters, Client &client)
 	else if (check_param(paramters.c_str(), client) && client.getPasswordApproved()){
 		if (nicknames.find(paramters) == nicknames.end()){
 			client.setNickname(paramters);
+			std::cout << "Your Nickname is: " << client.getNickname() << std::endl;
 			client.setNicknameSited(true);
-			puts("HEEEEEEEEE");
 			nicknames.insert(paramters);
 		}
 		else{
@@ -228,20 +230,24 @@ void irc_server::USER(std::string parametrs, Client &client){
 			std::string hostname = parametrs.substr(0, pose);
 			parametrs.erase(0, pose + delim.length());
 			std::string real_name = parametrs.substr(1);
-			if (client.getPasswordApproved() && client.getNickNameSited()){
-				client.setUserName(user);
-				client.setMode(mode);
-				client.setHostname(hostname);
-				client.setRealName(real_name);
-				// client
+			if (client.getPasswordApproved() && client.getNickNameSited())
+			{
+				if (!client.getUserNameSited()){
+					client.setUserName(user);
+					client.setMode(mode);
+					client.setHostname(hostname);
+					client.setRealName(real_name);
+					client.setUsernameSited(true);
+					welcome_message(client.getFdNumber(), client);
+				}
+				else
+					send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname()));
 			}
-			else{
-				send_message(client.getFdNumber(), "Error: An Authentification step has been skiped\n");
-			}
+			else
+				send_message(client.getFdNumber(), "Error: An Authentication step has been skipped\n");
 		}
 		catch(const std::exception& e){
 			std::cerr << e.what() << std::endl;
 		}
-		
-	}
+}
 }

@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 01:26:20 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 03:54:32 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,4 +40,11 @@ bool    irc_server::check_param(const char *nickname, Client &client){
 		}
 	}
 	return (true);
+}
+
+void	irc_server::welcome_message(int fd, Client& client)
+{ 
+	std::string message = "irc.127.0.0.1 001 " + client.getNickname() + " :Welcome to the Internet Relay Network " + \
+	client.getNickname() + "!" + client.getNickname() + "@" + client.getHostname() + "\n"; 
+	write(fd, message.c_str(), message.length());
 }

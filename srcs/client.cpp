@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 01:50:46 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 03:16:07 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 Client::Client(){
     this->PasswordApproved = false;
     this->NicknameSited = false;
+    this->UsernameSited = false;
 }
 
 Client::~Client(){
@@ -86,4 +87,12 @@ std::string Client::getUserName(void){
 
 std::string Client::getMode(void){
     return(this->mode);
+}
+
+void    Client::setUsernameSited(bool _Usernamesited){
+    this->UsernameSited = _Usernamesited;
+}
+
+bool    Client::getUserNameSited(void){
+    return (this->UsernameSited);
 }
