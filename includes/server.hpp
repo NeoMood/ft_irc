@@ -26,9 +26,10 @@
 #include <set>
 #include <map>
 #include <stdexcept>
-#include "client.hpp"
 #include <cstring>
 #include <sstream>
+#include "Logger.hpp"
+#include "Channel.hpp"
 
 
 #define BUFFER_SIZE 1024
@@ -44,7 +45,15 @@ class irc_server{
 		int	accept_fd;
 		int	poll_fds;
 		std::vector<pollfd> vec_fd;
+		std::vector<Channel> channels;
+		Logger& logger;
     public:
+		class ChannelNotFound: public std::exception {
+			public:
+				virtual const char * what() const throw () {
+      				return "Channel not found";
+   				}
+		};
 	    std::vector<std::string> full_command;
 		std::map<int, Client>	connected;
 		std::map<int, Client>	guest;
@@ -72,4 +81,11 @@ class irc_server{
 		void	PASS(std::string paramters, Client &client);
 		void	NICK(std::string paramters, Client &client);
 		void	USER(std::string parametrs, Client &client);
+		void	JOIN(std::string parametrs, Client& client);
+		void	PRIVMSG(std::string parametrs, Client& client);
+		void	KICK(std::string parametrs, Client& client);
+		void	INVITE(std::string parametrs, Client& client);
+		void	TOPIC(std::string parametrs, Client& client);
+		void	MODE(std::string parametrs, Client& client);
+		std::vector<Channel>::iterator findChannelByName(std::string channel);
 };

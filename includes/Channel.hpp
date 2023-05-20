@@ -5,18 +5,16 @@
 #include <stdexcept>
 #include <string>
 #include "client.hpp"
+#include "Logger.hpp"
+#include "Reply.hpp"
 
-// Numeric Replies:
 
-// # define ERR_NEEDMOREPARAMS
-// # define ERR_BANNEDFROMCHAN
-// # define ERR_INVITEONLYCHAN
-// # define ERR_BADCHANNELKEY
-// # define ERR_CHANNELISFULL
+
 // # define ERR_BADCHANMASK
-// # define ERR_NOSUCHCHANNEL
 // # define ERR_TOOMANYCHANNELS
-// # define ERR_TOOMANYTARGETS
+
+
+
 // # define ERR_UNAVAILRESOURCE
 
 // Command: JOIN
@@ -27,17 +25,22 @@ class Channel {
     private:
         std::string                 __name;
         std::string                 __key;
-        Client*                     __owner;
-        std::map<int, Client*>        __users;
-        std::map<int, Client*>        __banned_users;
-        std::map<int, Client*>        __operators;
+        Client&                     __owner;
+        std::map<std::string, Client&>        __users;
+        std::map<std::string, Client&>        __banned_users;
+        std::map<std::string, Client&>        __operators;
         int                         __online_users;
     public:
-        Channel(std::string name, Client* _operator);
-        int join(Client *client);
-        int remove_user(Client *client);
-        int ban_user(Client *client);
+        Channel(std::string name, Client& _operator);
+        bool is_already_join(Client& client);
+        int join_user(Client& client);
+        int remove_user(Client& client);
+        int ban_user(Client& client);
+        int add_operator(Client& client);
+        int unban_user(Client& client);
+        std::map<std::string, Client&>::iterator getUser(std::string nickname);
+        std::map<std::string, Client&>  getUsers();
+        std::string getChannelName() const;
+        std::string getChannelKey() const;
         ~Channel();
 };
-
-// std::vector<Channel> *g_Channels;

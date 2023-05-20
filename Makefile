@@ -12,15 +12,17 @@
 
 NAME = ircserv
 
-CPPFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address -g
+# CPPFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address -g
+CPPFLAGS = -std=c++98
 
-INC =	includes/server.hpp\
-		includes/client.hpp\
+INC =	${wildcard includes/*.hpp}
 
 SRC =	srcs/main.cpp\
 		srcs/server.cpp\
 		srcs/client.cpp\
 		srcs/utils.cpp\
+		srcs/Logger.cpp\
+		srcs/Channel.cpp
 		
 
 

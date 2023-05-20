@@ -12,7 +12,7 @@
 
 #include "../includes/client.hpp"
 
-Client::Client(){
+Client::Client(): channel_mode(){
     this->PasswordApproved = false;
     this->NicknameSited = false;
     this->UsernameSited = false;

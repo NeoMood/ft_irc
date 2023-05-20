@@ -34,6 +34,43 @@
 #define ERR_NONICKNAMEGIVEN(nick) "431 " + nick + " :No nickname given\n"
 #define ERR_ERRONEUSNICKNAME(nick) "432 " + nick + " :Erroneus nickname\n"
 #define ERR_NICKNAMEINUSE(nick) "433 " + nick + " :Nickname is already in use\n"
+#define ERR_NOTREGISTERED(nick) "451 " + nick + " :You have not registered\n"
+
+// typedef enum {
+//     a = 0,
+//     i = 1,
+//     w = 2,
+//     r = 3,
+//     o = 4,
+//     O = 5,
+//     s = 6,
+// } modes_t;
+
+// i: Set/remove Invite-only channel
+// t: Set/remove the restrictions of the TOPIC command to channel
+// operators
+// k: Set/remove the channel key (password)
+// o: Give/take channel operator privilege
+// l: Set/remove the user limit to channel
+
+typedef enum {
+    i = 0,
+    t = 1,
+    k = 2,
+    o = 3,
+    l = 4,
+
+} channel_mode_t;
+
+//  The available modes are as follows:
+
+//            a - user is flagged as away;
+//            i - marks a users as invisible;
+//            w - user receives wallops;
+//            r - restricted user connection;
+//            o - operator flag;
+//            O - local operator flag;
+//            s - marks a user for receipt of server notices.
 
 class Client{
     private:
@@ -47,6 +84,7 @@ class Client{
         std::string hostname;
         std::string RealName;
         int FdNumber;
+        std::vector<channel_mode_t> channel_mode;
     public:
         Client();
         ~Client();

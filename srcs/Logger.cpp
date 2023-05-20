@@ -47,7 +47,7 @@ void Logger::__log(loglevel_t level, std::string data)
         break;
     }
 
-    std::cout << "[" << YELLOW << buf << RESET << "]" << std::setw(6) << "[" << GREEN << levelstr << RESET << "] " << BLUE << data << RESET << std::endl;
+    std::cout << "[" << YELLOW << buf << RESET << "]" << std::setw(6) << "[" << RED << "level: " << RESET << GREEN << levelstr << RESET << "] " << BLUE << data << RESET << std::endl;
 }
 
 void Logger::log(loglevel_t level, std::string str)
