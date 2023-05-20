@@ -2,6 +2,7 @@
 
 #define RPL_WELCOME             "001"
 #define RPL_YOURHOST            "002"
+
 #define RPL_CREATED             "003"
 #define RPL_MYINFO              "004"
 
@@ -59,6 +60,8 @@
 #define ERR_ALREADYREGISTRED    "462"
 #define ERR_PASSWDMISMATCH      "464"
 #define ERR_UNKNOWNMODE         "472"
+#define ERR_BANNEDFROMCHAN      "474"
+#define ERR_BADCHANNELKEY       "475"
 #define ERR_NOPRIVILEGES        "481"
 #define ERR_CHANOPRIVSNEEDED    "482"
 #define ERR_UMODEUNKNOWNFLAG    "501"
