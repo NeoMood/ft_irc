@@ -63,6 +63,6 @@
         "__tree": "cpp",
         "codecvt": "cpp",
         "map": "cpp",
-        "set": "cpp"
+        "memory_resource": "cpp"
     }
 }
