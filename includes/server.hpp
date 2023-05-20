@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/17 22:23:13 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 01:12:24 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,16 +58,16 @@ class irc_server{
 		void bind_sockets(void);
 		void listenToIncomingconnection(void);
 		void AcceptToIncomingconnection(Client& Client_data);
-		void send_message(int fd, std::string message);
 		void multipleconnection(void);
-		void check_port(char **argv);
 		bool check_param(const char *nickname, Client &client);
-		void createServer(void);
 		void ReusableSocket(void);
 		void non_blocking(void);
-		// void recievingmessage(void);
-
+	// UTILS FUNCTION
+		std::vector<std::string>	split_string(std::string& param, std::string& delim);
+		void						send_message(int fd, std::string message);
+		void						check_port(char **argv);
 	//  COMMAND FUNCTION
 		void	PASS(std::string paramters, Client &client);
 		void	NICK(std::string paramters, Client &client);
+		void	USER(std::string parametrs, Client &client);
 };

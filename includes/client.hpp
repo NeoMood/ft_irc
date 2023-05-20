@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:35:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/17 22:23:04 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 00:58:16 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,23 +37,36 @@
 
 class Client{
     private:
-        bool    isregistred;
-        bool    nicknamesited;
-        std::string Name;
-        std::string ip_adress;
-        int fd_number;
+        bool    PasswordApproved;
+        bool    NicknameSited;
+        std::string Nickname;
+        std::string	IPAddress;
+        std::string UserName;
+        std::string mode;
+        std::string hostname;
+        std::string RealName;
+        int FdNumber;
     public:
-        Client(std::string Name, std::string ip_adress, int fd_number);
         Client();
         ~Client();
-        void    setName(std::string Name);
-        void    setip_adress(std::string ip_adress);
-        void    setfd_number(int fd_number);
-        std::string    getName(void);
-        std::string	getip_adress(void);
-        int	getfd_number(void);
-        bool	getisregistred();
-        bool    getnicknamesited();
-        void    setnicknamesited(bool _nicknamesited);
-		void	setisregistred(bool _isregistred);
+    // Setters
+        void	setNicknameSited(bool _Nicknamesited);
+		void	setIPAddress(std::string _IPAdresss);
+        void    setHostname(std::string _hostname);
+        void    setRealName(std::string _realname);
+		void	setPasswordApproved(bool _Password);
+        void    setUserName(std::string _user);
+        void	setfd_number(int fd_number);
+        void    setMode(std::string _mode);
+        void	setNickname(std::string Nickname);
+    // Getters
+        bool		getNickNameSited(void);
+        int			getFdNumber(void);
+        bool		getPasswordApproved(void);
+        std::string	getNickname(void);
+        std::string	getHostname(void);
+        std::string	getRealName(void);
+        std::string	getUserName(void);
+        std::string	getMode(void);
+        
 };

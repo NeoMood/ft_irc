@@ -6,7 +6,7 @@
 #    By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/01 20:07:11 by yamzil            #+#    #+#              #
-#    Updated: 2023/05/17 21:12:33 by yamzil           ###   ########.fr        #
+#    Updated: 2023/05/18 21:04:05 by yamzil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,15 +14,15 @@ NAME = ircserv
 
 CPPFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address -g
 
-SRC =	server.cpp\
-		main.cpp\
-		client.cpp\
-		utils.cpp\
-		commands.cpp\
+INC =	includes/server.hpp\
+		includes/client.hpp\
+
+SRC =	srcs/main.cpp\
+		srcs/server.cpp\
+		srcs/client.cpp\
+		srcs/utils.cpp\
 		
 
-INC =	server.hpp\
-		client.hpp\
 
 OBJ = $(SRC:.cpp=.o)
 

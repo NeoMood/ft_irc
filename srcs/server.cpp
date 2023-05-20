@@ -5,13 +5,13 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/02 15:26:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/17 22:04:01 by yamzil           ###   ########.fr       */
+/*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
+/*   Updated: 2023/05/20 02:25:21 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
-#include "client.hpp"
+#include "../includes/server.hpp"
+#include "../includes/client.hpp"
 
 void    irc_server::init_sockets(void){
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -68,13 +68,13 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 		{
 			struct sockaddr_in client_addr;
 			socklen_t client_len = sizeof(client_addr);
-			accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len); // fd _>
+			accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
 			if (accept_fd == -1){
 				std::cerr << "accept: " << std::strerror(errno) << std::endl;
 				exit (EXIT_FAILURE);
 			}
 			Client_data.setfd_number(accept_fd);
-			Client_data.setip_adress(inet_ntoa(client_addr.sin_addr));
+			Client_data.setIPAddress(inet_ntoa(client_addr.sin_addr));
 			guest[accept_fd] = Client_data;
 			pollfd client_fd;
 			client_fd.fd = accept_fd;
@@ -105,11 +105,15 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 					full_command.push_back(command);
 					std::string	parameters = message.substr(pos + 1, message.length() - pos - 2);
 					full_command.push_back(parameters);
+			
 					if (!command.compare(0, command.length(), "PASS")){
 						PASS(parameters, guest[vec_fd[i].fd]);
 					}
 					else if (!command.compare(0, command.length(), "NICK")){
 						NICK(parameters, guest[vec_fd[i].fd]);
+					}
+					else if (!command.compare(0, command.length(), "USER")){
+						USER(parameters, guest[vec_fd[i].fd]);    
 					}
 				}
 				else{
@@ -161,4 +165,83 @@ irc_server::irc_server(){
 }
 
 irc_server::~irc_server(){
+}
+
+
+//// COMMANDS
+
+void irc_server::PASS(std::string paramters, Client &client)
+{
+	if (paramters.length() == 0){
+		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "PASS"));
+		return;
+	}
+	else if (paramters != this->passwd){
+		send_message(client.getFdNumber(), ERR_PASSWDMISMATCH(client.getNickname()));
+		return;
+	}
+	else if (paramters == this->passwd && !client.getPasswordApproved()){
+		send_message(client.getFdNumber(),"Password approved, you can set a nickname\n");
+		client.setPasswordApproved(true);
+		std::cout << "gere" << client.getPasswordApproved() << std::endl;
+		return ;
+	}
+	else if (client.getPasswordApproved() == true){
+		send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname()));
+		return ;
+	}
+}
+
+void irc_server::NICK(std::string paramters, Client &client)
+{
+	if (paramters.length() == 0){
+		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname()));
+	}
+	else if (check_param(paramters.c_str(), client) && client.getPasswordApproved()){
+		if (nicknames.find(paramters) == nicknames.end()){
+			client.setNickname(paramters);
+			client.setNicknameSited(true);
+			puts("HEEEEEEEEE");
+			nicknames.insert(paramters);
+		}
+		else{
+			send_message(client.getFdNumber(), ERR_NICKNAMEINUSE(paramters));
+		}
+	}
+}
+
+void irc_server::USER(std::string parametrs, Client &client){
+	if (parametrs.length() == 0){
+		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "USER"));
+	}
+	else{
+		try
+		{
+			std::string	delim = " ";
+			size_t	pos = parametrs.find(delim);
+			std::string	user = parametrs.substr(0, pos);
+			parametrs.erase(0, pos + delim.length());
+			size_t pos_ = parametrs.find(delim);
+			std::string	mode = parametrs.substr(0, pos_);
+			parametrs.erase(0, pos_ + delim.length());
+			size_t pose = parametrs.find(delim);
+			std::string hostname = parametrs.substr(0, pose);
+			parametrs.erase(0, pose + delim.length());
+			std::string real_name = parametrs.substr(1);
+			if (client.getPasswordApproved() && client.getNickNameSited()){
+				client.setUserName(user);
+				client.setMode(mode);
+				client.setHostname(hostname);
+				client.setRealName(real_name);
+				// client
+			}
+			else{
+				send_message(client.getFdNumber(), "Error: An Authentification step has been skiped\n");
+			}
+		}
+		catch(const std::exception& e){
+			std::cerr << e.what() << std::endl;
+		}
+		
+	}
 }
