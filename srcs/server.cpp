@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 03:39:13 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 04:30:17 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,26 @@ void	irc_server::listenToIncomingconnection(){
 	}
 }
 
+void	irc_server::multipleconnection(){
+	Client	Client_data;
+	pollfd	server_fd;
+
+	server_fd.fd = socket_fd;
+	server_fd.events = POLLIN;
+	vec_fd.push_back(server_fd);
+	get_date();
+	while (true)
+	{
+		poll_fds = poll(&vec_fd[0], vec_fd.size(), -1);
+		if ( poll_fds == -1){
+			std::cerr << "poll: " << std::strerror(errno) << std::endl;
+			close (socket_fd);
+			exit (EXIT_FAILURE);
+		}
+		AcceptToIncomingconnection(Client_data);
+	}
+}
+
 void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 {
 	char buffer[BUFFER_SIZE];
@@ -91,14 +111,11 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 			else if (nbytes == 0) {
 				close(vec_fd[i].fd);
 				vec_fd.erase(vec_fd.begin() + i);
-				std::cout << "See you later" << std::endl;
+				std::cout << "See you later!" << std::endl;
 			}
 			else 
 			{
 				std::string message(buffer);
-				if (message.size() > message.max_size()){
-					std::cerr << "Message Buffer low" << std::endl;
-				}
 				size_t	pos = message.find(" ");
 				if (pos != std::string::npos){
 					std::string	command = message.substr(0, pos);
@@ -120,56 +137,12 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 					}
 				}
 				else{
-					std::cerr << "Invalid" << std::endl;
+					std::cerr << "Error Argument" << std::endl;
 				}
 			}
 		}	
 	}
 }
-
-
-void	irc_server::multipleconnection(){
-	Client	Client_data;
-	pollfd	server_fd;
-
-	server_fd.fd = socket_fd;
-	server_fd.events = POLLIN;
-	vec_fd.push_back(server_fd);
-	std::cout << "IRC Server is starting..." << std::endl;
-	while (true)
-	{
-		poll_fds = poll(&vec_fd[0], vec_fd.size(), -1);
-		if ( poll_fds == -1){
-			std::cerr << "poll: " << std::strerror(errno) << std::endl;
-			close (socket_fd);
-			exit (EXIT_FAILURE);
-		}
-		AcceptToIncomingconnection(Client_data);
-	}
-}
-
-int	irc_server::getSocketFd(void){
-	return (this->socket_fd);
-}
-
-void	irc_server::setSocketFd(int socket_fd){
-	this->socket_fd = socket_fd;
-}
-
-void	irc_server::setPassword(std::string passwd){
-	this->passwd = passwd;
-}
-
-std::string	irc_server::getPassword(){
-	return(this->passwd);
-}
-
-irc_server::irc_server(){
-}
-
-irc_server::~irc_server(){
-}
-
 
 //// COMMANDS
 
@@ -249,5 +222,29 @@ void irc_server::USER(std::string parametrs, Client &client){
 		catch(const std::exception& e){
 			std::cerr << e.what() << std::endl;
 		}
+	}
 }
+
+/// GETTERS AND SETTERS
+
+int	irc_server::getSocketFd(void){
+	return (this->socket_fd);
+}
+
+void	irc_server::setSocketFd(int socket_fd){
+	this->socket_fd = socket_fd;
+}
+
+void	irc_server::setPassword(std::string passwd){
+	this->passwd = passwd;
+}
+
+std::string	irc_server::getPassword(){
+	return(this->passwd);
+}
+
+irc_server::irc_server(){
+}
+
+irc_server::~irc_server(){
 }

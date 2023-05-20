@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 03:54:32 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/20 04:32:01 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,4 +47,11 @@ void	irc_server::welcome_message(int fd, Client& client)
 	std::string message = "irc.127.0.0.1 001 " + client.getNickname() + " :Welcome to the Internet Relay Network " + \
 	client.getNickname() + "!" + client.getNickname() + "@" + client.getHostname() + "\n"; 
 	write(fd, message.c_str(), message.length());
+}
+
+void	irc_server::get_date(void){
+
+	std::time_t t = std::time(0);
+  	std::tm* now = std::localtime(&t);
+  	std::cout << "This server was created " << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' << now->tm_mday << std::endl;
 }
