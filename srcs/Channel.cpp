@@ -9,5 +9,4 @@ int Channel::join(Client *client) {
 
 
 Channel::~Channel() {
-    //
 }
