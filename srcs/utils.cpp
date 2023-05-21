@@ -53,5 +53,6 @@ void	irc_server::get_date(void){
 
 	std::time_t t = std::time(0);
   	std::tm* now = std::localtime(&t);
-  	std::cout << "This server was created " << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' << now->tm_mday << std::endl;
+  	// std::cout << "This server was created " << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' << now->tm_mday << std::endl;
+	logger.log(INFO, "The server has been created");
 }

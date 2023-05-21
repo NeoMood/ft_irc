@@ -14,29 +14,37 @@ NAME = ircserv
 
 # CPPFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address -g
 CPPFLAGS = -std=c++98
+CLANG = clang++
 
-INC =	${wildcard includes/*.hpp}
+OBJDIR = obj/
 
-SRC =	srcs/main.cpp\
-		srcs/server.cpp\
-		srcs/client.cpp\
-		srcs/utils.cpp\
-		srcs/Logger.cpp\
-		srcs/Channel.cpp
-		
+SRCDIR = srcs/
+
+INC =	includes
+
+SRC =	Channel.cpp client.cpp Logger.cpp\
+		main.cpp Request.cpp server.cpp\
+		utils.cpp
 
 
-OBJ = $(SRC:.cpp=.o)
+# OBJS
+OBJ = $(addprefix $(OBJDIR), $(SRC:.cpp=.o))
 
 all: $(NAME)
 
+
 $(NAME): $(OBJ) $(INC)
-	@c++ $(CPPFLAGS) $(SRC) -o $(NAME)
+	@$(CLANG) $(CPPFLAGS) -o $(NAME) $(OBJ)
+
+$(OBJ): $(OBJDIR)%.o : $(SRCDIR)%.cpp
+	@mkdir -p $(OBJDIR)
+	@$(CLANG) $(FLAGS) -I$(INC) -o $@ -c $<
 
 clean:
+	@rm -rf $(OBJDIR)
 	@rm -rf $(OBJ)
 
-fclean:
-	@rm -rf $(OBJ) $(NAME)
+fclean: clean
+	@rm -rf $(NAME)
 
 re: fclean all
