@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:35:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/21 17:04:37 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/05/22 17:39:26 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,9 @@ typedef enum {
 //            o - operator flag;
 //            O - local operator flag;
 //            s - marks a user for receipt of server notices.
-
+// typedef enum {
+//     AWAY = 0,
+// } user_mode_t;
 class Client{
     private:
         bool    PasswordApproved;
