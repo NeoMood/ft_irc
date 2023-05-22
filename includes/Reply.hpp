@@ -60,6 +60,7 @@
 #define ERR_INVITEONLYCHAN      "473"
 #define ERR_BANNEDFROMCHAN(nick, chan)  "474 " + nick + " " + chan + " :Cannot join channel (+b)\n"
 #define ERR_BADCHANNELKEY       "475"
+#define ERR_BADCHANMASK(nick, chan)     "476 " + nick + " " + chan + " :Bad Channel Mask\n"
 #define ERR_NOPRIVILEGES        "481"
 #define ERR_CHANOPRIVSNEEDED(nick, chan)    "482 " + nick + " " + chan + " :You're not channel operator\n"
 #define ERR_UMODEUNKNOWNFLAG    "501"

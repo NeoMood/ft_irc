@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:35:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 03:16:00 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/21 17:04:37 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,7 @@ class Client{
         void	setfd_number(int fd_number);
         void    setMode(std::string _mode);
         void	setNickname(std::string Nickname);
+        void    setChannelMode(channel_mode_t _mode);
     // Getters
         bool		getNickNameSited(void);
         bool		getUserNameSited(void);

@@ -1,6 +1,14 @@
 #include "../includes/Channel.hpp"
 
-Channel::Channel(std::string name, Client& _operator): __name(name), __key(), __owner(_operator), __users(), __banned_users(), __online_users(1) {}
+Channel::Channel(std::string name, Client& _operator): __name(name), __key(), mask(), support_modes(true), __owner(_operator), __users(), __banned_users(), __online_users(1) {
+    mask += name[0];
+    if (mask == "+") {
+        support_modes = false;
+    }
+    if (mask == "!") {
+        __owner.setChannelMode(o);
+    }
+}
 
 bool Channel::is_already_join(Client& client) {
     if (this->__users.find(client.getNickname()) != this->__users.end()) {

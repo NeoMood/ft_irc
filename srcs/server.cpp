@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 04:30:17 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/21 15:56:56 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,6 +252,11 @@ void irc_server::JOIN(std::string parametrs, Client& client) {
 			return ;
 		}
 		logger.log(INFO, parametrs);
+		if (parametrs[0] != '&' || parametrs[0] != '#' || parametrs[0] != '+' || parametrs[0] != '!'
+			|| parametrs.find(",") != std::string::npos) {
+			send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), parametrs));
+			return ;
+		}
 		if (!channels.size()) {
 			logger.log(DEBUG, client.getNickname());
 			channels.push_back(Channel(parametrs, client));

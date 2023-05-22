@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 04:10:55 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/21 17:04:49 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,4 +99,8 @@ std::string Client::getMode(void){
 
 bool    Client::getUserNameSited(void){
     return (this->UsernameSited);
+}
+
+void    Client::setChannelMode(channel_mode_t _mode) {
+    channel_mode.push_back(_mode);
 }

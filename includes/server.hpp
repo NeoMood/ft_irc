@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 04:31:17 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/22 17:28:12 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,14 +78,14 @@ class irc_server{
 		void	check_port(char **argv);
 		void	get_date(void);
 	//  COMMAND FUNCTION
-		void	PASS(std::string paramters, Client &client);
-		void	NICK(std::string paramters, Client &client);
-		void	USER(std::string parametrs, Client &client);
-		void	JOIN(std::string parametrs, Client& client);
-		void	PRIVMSG(std::string parametrs, Client& client);
-		void	KICK(std::string parametrs, Client& client);
-		void	INVITE(std::string parametrs, Client& client);
-		void	TOPIC(std::string parametrs, Client& client);
-		void	MODE(std::string parametrs, Client& client);
+		void	PASS(std::string paramters, Client &client); // yahya
+		void	NICK(std::string paramters, Client &client); // yahya
+		void	USER(std::string parametrs, Client &client); // yahya
+		void	JOIN(std::string parametrs, Client& client); // ayoub
+		void	PRIVMSG(std::string parametrs, Client& client); // ayoub send msg to channel, saad send message to user
+		void	KICK(std::string parametrs, Client& client); // ayoub
+		void	INVITE(std::string parametrs, Client& client); // saad 
+		void	TOPIC(std::string parametrs, Client& client); // saad
+		void	MODE(std::string parametrs, Client& client); // saad mode for user, ayoub mode for channel
 		std::vector<Channel>::iterator findChannelByName(std::string channel);
 };
