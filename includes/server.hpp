@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/22 17:28:12 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/05/22 18:01:43 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ class irc_server{
 		void	NICK(std::string paramters, Client &client); // yahya
 		void	USER(std::string parametrs, Client &client); // yahya
 		void	JOIN(std::string parametrs, Client& client); // ayoub
-		void	PRIVMSG(std::string parametrs, Client& client); // ayoub send msg to channel, saad send message to user
+		void	PRIVMSG(std::string parametrs, Client& client); // ayoub send msg to channel
 		void	KICK(std::string parametrs, Client& client); // ayoub
 		void	INVITE(std::string parametrs, Client& client); // saad 
 		void	TOPIC(std::string parametrs, Client& client); // saad

@@ -1,6 +1,6 @@
 #include "../includes/Channel.hpp"
 
-Channel::Channel(std::string name, Client& _operator): __name(name), __key(), mask(), support_modes(true), __owner(_operator), __users(), __banned_users(), __online_users(1) {
+Channel::Channel(std::string name, Client& _operator): __name(name), __topic(), __key(), mask(), support_modes(true), __is_invite_only(false), __owner(_operator), __users(), __banned_users(), __online_users(1) {
     mask += name[0];
     if (mask == "+") {
         support_modes = false;

@@ -24,9 +24,11 @@
 class Channel {
     private:
         std::string                 __name;
+        std::string                 __topic;
         std::string                 __key;
         std::string                 mask;
         bool                        support_modes;
+        bool                        __is_invite_only;
         Client&                     __owner;
         std::map<std::string, Client&>        __users;
         std::map<std::string, Client&>        __banned_users;
