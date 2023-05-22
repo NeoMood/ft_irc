@@ -17,7 +17,7 @@ class Request {
     private:
         std::string                 _cmd;
         // std::string                 _message;
-        std::vector<std::string>         request; request.push_back("#madrid,", "&test", "key1", "key2")
+        std::vector<std::string>         request;
         // std::vector<std::string>    _keys;
         bool                        _invalid_request;
         std::vector<std::string>    _comma_separated_values(std::string line);

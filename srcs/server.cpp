@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/21 15:56:56 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/05/22 17:34:47 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,6 +247,7 @@ void irc_server::JOIN(std::string parametrs, Client& client) {
 		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN"));
 	} else {
 		// Channel name must be started with '&', '#', '+' or '!' of length up to fifty (50) characters
+		// JOIN #test^Dtest
 		if (!client.getUserName().length()) {
 			send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
 			return ;
