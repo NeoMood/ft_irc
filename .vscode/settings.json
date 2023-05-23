@@ -63,6 +63,7 @@
         "__tree": "cpp",
         "codecvt": "cpp",
         "map": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "iomanip": "cpp"
     }
 }

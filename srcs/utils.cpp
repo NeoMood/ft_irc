@@ -1,17 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.cpp                                          :+:      :+:    :+:   */
+/*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 11:22:57 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 12:11:47 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Server.hpp"
 #include "../includes/Client.hpp"
+#include "../includes/Reply.hpp"
 
 void irc_server::check_port(char **argv)
 {
@@ -47,8 +48,11 @@ void	irc_server::welcome_message(int fd, std::string message){
 }
 
 void	irc_server::get_date(void){
-
-	std::time_t t = std::time(0);
-  	std::tm* now = std::localtime(&t);
-  	std::cout << "This server was created " << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' << now->tm_mday << std::endl;
+	
+	time_t	t;
+	
+	struct tm* date;
+	time(&t);
+	date = localtime(&t);
+	send_message(0, RPL_CREATED(asctime(date)));
 }
