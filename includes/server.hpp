@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 04:31:17 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 11:22:22 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 #include <set>
 #include <map>
 #include <stdexcept>
-#include "client.hpp"
+#include "Client.hpp"
 #include <cstring>
 #include <sstream>
 
@@ -64,12 +64,13 @@ class irc_server{
 		void ReusableSocket(void);
 		void non_blocking(void);
 	// UTILS FUNCTION
+		void	welcome_message(int fd, std::string message);
 		void	send_message(int fd, std::string message);
-		void	welcome_message(int fd, Client& client);
 		void	check_port(char **argv);
 		void	get_date(void);
 	//  COMMAND FUNCTION
 		void	PASS(std::string paramters, Client &client);
 		void	NICK(std::string paramters, Client &client);
 		void	USER(std::string parametrs, Client &client);
+		void	PRIVMSG(std::string parametrs, Client &client);
 };

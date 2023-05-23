@@ -6,11 +6,11 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 04:10:55 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 11:22:46 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/client.hpp"
+#include "../includes/Client.hpp"
 
 Client::Client(){
     this->PasswordApproved = false;

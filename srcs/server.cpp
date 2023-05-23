@@ -6,12 +6,12 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 04:30:17 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 11:22:37 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/server.hpp"
-#include "../includes/client.hpp"
+#include "../includes/Server.hpp"
+#include "../includes/Client.hpp"
 
 void    irc_server::init_sockets(void){
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -135,9 +135,12 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 					else if (!command.compare(0, command.length(), "USER")){
 						USER(parameters, guest[vec_fd[i].fd]);    
 					}
+					else if (!command.compare(0, command.length(), "PRIVMSG")){
+						PRIVMSG(parameters, guest[vec_fd[i].fd]);
+					}
 				}
 				else{
-					std::cerr << "Error Argument" << std::endl;
+					send_message(vec_fd[i].fd, "Error: No Enough Arguments\n");
 				}
 			}
 		}	
@@ -149,11 +152,11 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data)
 void irc_server::PASS(std::string paramters, Client &client)
 {
 	if (paramters.length() == 0){
-		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "PASS"));
+		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "PASS", client.getUserName()));
 		return;
 	}
 	else if (paramters != this->passwd){
-		send_message(client.getFdNumber(), ERR_PASSWDMISMATCH(client.getNickname()));
+		send_message(client.getFdNumber(), ERR_PASSWDMISMATCH(client.getNickname(), client.getUserName()));
 		return;
 	}
 	else if (paramters == this->passwd && !client.getPasswordApproved()){
@@ -162,7 +165,7 @@ void irc_server::PASS(std::string paramters, Client &client)
 		return ;
 	}
 	else if (client.getPasswordApproved() == true){
-		send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname()));
+		send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName()));
 		return ;
 	}
 }
@@ -170,7 +173,7 @@ void irc_server::PASS(std::string paramters, Client &client)
 void irc_server::NICK(std::string paramters, Client &client)
 {
 	if (paramters.length() == 0){
-		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname()));
+		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname(), client.getUserName()));
 	}
 	else if (check_param(paramters.c_str(), client) && client.getPasswordApproved()){
 		if (nicknames.find(paramters) == nicknames.end()){
@@ -180,14 +183,14 @@ void irc_server::NICK(std::string paramters, Client &client)
 			nicknames.insert(paramters);
 		}
 		else{
-			send_message(client.getFdNumber(), ERR_NICKNAMEINUSE(paramters));
+			send_message(client.getFdNumber(), ERR_NICKNAMEINUSE(paramters, client.getUserName()));
 		}
 	}
 }
 
 void irc_server::USER(std::string parametrs, Client &client){
 	if (parametrs.length() == 0){
-		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "USER"));
+		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "USER", client.getUserName()));
 	}
 	else{
 		try
@@ -211,10 +214,11 @@ void irc_server::USER(std::string parametrs, Client &client){
 					client.setHostname(hostname);
 					client.setRealName(real_name);
 					client.setUsernameSited(true);
-					welcome_message(client.getFdNumber(), client);
+					welcome_message(client.getFdNumber(), RPL_WELCOME(client.getNickname(), client.getUserName(), client.getHostname()));
+					welcome_message(client.getFdNumber(), RPL_YOURHOST(client.getNickname(), client.getHostname()));
 				}
 				else
-					send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname()));
+					send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName()));
 			}
 			else
 				send_message(client.getFdNumber(), "Error: An Authentication step has been skipped\n");
@@ -222,6 +226,18 @@ void irc_server::USER(std::string parametrs, Client &client){
 		catch(const std::exception& e){
 			std::cerr << e.what() << std::endl;
 		}
+	}
+}
+
+
+void	irc_server::PRIVMSG(std::string parametrs, Client &client){
+	size_t	pos = parametrs.find(":");
+	if (pos != std::string::npos){
+		std::string message = parametrs.substr(0, pos + 1);
+		// send(client.)
+	}
+	else{
+		send_message(client.getFdNumber(), ERR_NOTEXTTOSEND(void));
 	}
 }
 

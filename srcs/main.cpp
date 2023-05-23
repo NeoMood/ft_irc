@@ -6,11 +6,11 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:06:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/18 20:41:34 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 11:21:40 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/server.hpp"
+#include "../includes/Server.hpp"
 
 int	main(int argc, char **argv){
 	if (argc == 3){

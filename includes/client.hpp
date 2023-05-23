@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:35:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/20 03:16:00 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/21 03:00:45 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,17 @@
 
 #pragma	once
 
-#define ERR_PASSWDMISMATCH(nick) "464 " + nick + " :Password incorrect\n"
-#define ERR_NEEDMOREPARAMS(nick, cmd)   "461 " + nick + " " + cmd + " :Not enough parameters\n"
-#define ERR_ALREADYREGISTRED(nick) "462 " + nick + " :You may not reregister\n"
-#define ERR_NONICKNAMEGIVEN(nick) "431 " + nick + " :No nickname given\n"
-#define ERR_ERRONEUSNICKNAME(nick) "432 " + nick + " :Erroneus nickname\n"
-#define ERR_NICKNAMEINUSE(nick) "433 " + nick + " :Nickname is already in use\n"
+#define ERR_PASSWDMISMATCH(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + " 464" + nick + " :Password incorrect\n"
+#define ERR_NEEDMOREPARAMS(nick, cmd, user)   ":" + nick + "!" + user + "@" + "irc_server" + "461 " + nick + " " + cmd + " :Not enough parameters\n"
+#define ERR_ALREADYREGISTRED(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + "462 " + nick + " :You may not reregister\n"
+#define ERR_NONICKNAMEGIVEN(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + "431 " + nick + " :No nickname given\n"
+#define ERR_ERRONEUSNICKNAME(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + "432 " + nick + " :Erroneus nickname\n"
+#define ERR_NICKNAMEINUSE(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + "433 " + nick + " :Nickname is already in use\n"
+#define ERR_NORECIPIENT(cmd) std::string("411 :No recipient given ") + cmd + "\n"
+#define ERR_NOTEXTTOSEND(void) "412 :No text to send\n"
 
+#define RPL_WELCOME(nick, user, host) ":irc_server 001 " + nick + ":Welcome to the <network> Network, " + nick + "!" + user + "@" + host + "\n"
+#define RPL_YOURHOST(nick, host) "irc_server 002 " + nick + " :Your host is " +  host + "\n"
 class Client{
     private:
         bool    PasswordApproved;
