@@ -57,6 +57,7 @@
 #define ERR_UNAVAILRESOURCE     "437"
 #define ERR_USERNOTINCHANNEL(nick, user, chan)    "441 " + nick + " " + user + " " + chan + " :They aren't on that channel\n"
 #define ERR_NOTONCHANNEL        "442"
+#define ERR_NOTREGISTERED(nick) "451" + nick + " :The client must be registred\n"
 #define ERR_NEEDMOREPARAMS(nick, cmd, user)   ":" + nick + "!" + user + "@" + "irc_server" + " 461 " + nick + " " + cmd + " :Not enough parameters\n"
 #define ERR_ALREADYREGISTRED(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + " 462 " + nick + " :You may not reregister\n"
 #define ERR_PASSWDMISMATCH(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + " 464 " + nick + " :Password incorrect\n"
@@ -70,3 +71,5 @@
 #define ERR_CHANOPRIVSNEEDED(nick, chan)    "482 " + nick + " " + chan + " :You're not channel operator\n"
 #define ERR_UMODEUNKNOWNFLAG    "501"
 #define ERR_USERSDONTMATCH      "502"
+
+

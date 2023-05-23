@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:35:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 11:53:10 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 13:12:32 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,15 @@
 
 #pragma	once
 
+typedef enum {
+    i = 0,
+    t = 1,
+    k = 2,
+    o = 3,
+    l = 4,
+
+} channel_mode_t;
+
 class Client{
     private:
         bool    PasswordApproved;
@@ -40,6 +49,7 @@ class Client{
         std::string hostname;
         std::string RealName;
         int FdNumber;
+        std::vector<channel_mode_t> channel_mode;
     public:
         Client();
         ~Client();
@@ -54,6 +64,7 @@ class Client{
         void	setfd_number(int fd_number);
         void    setMode(std::string _mode);
         void	setNickname(std::string Nickname);
+        void    setChannelMode(channel_mode_t _mode);
     // Getters
         bool		getNickNameSited(void);
         bool		getUserNameSited(void);

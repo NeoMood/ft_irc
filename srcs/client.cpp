@@ -6,13 +6,13 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 11:22:46 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 13:00:39 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Client.hpp"
 
-Client::Client(){
+Client::Client(): channel_mode(){
     this->PasswordApproved = false;
     this->NicknameSited = false;
     this->UsernameSited = false;
@@ -99,4 +99,8 @@ std::string Client::getMode(void){
 
 bool    Client::getUserNameSited(void){
     return (this->UsernameSited);
+}
+
+void    Client::setChannelMode(channel_mode_t _mode) {
+    channel_mode.push_back(_mode);
 }

@@ -63,7 +63,19 @@
         "__tree": "cpp",
         "codecvt": "cpp",
         "map": "cpp",
+<<<<<<< HEAD
         "set": "cpp",
         "iomanip": "cpp"
+=======
+        "memory_resource": "cpp",
+        "__bits": "cpp",
+        "__verbose_abort": "cpp",
+        "clocale": "cpp",
+        "iomanip": "cpp",
+        "set": "cpp",
+        "variant": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp"
+>>>>>>> 1841e0eda2dd811ca2164d1e89505e5cdf1dc4f4
     }
 }
