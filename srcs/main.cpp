@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:06:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 11:21:40 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 13:38:48 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,3 @@ int	main(int argc, char **argv){
         }
 	}
 }
-
-// WARNING 
-// getting recv: Resource temporarily unavailable !!!!
