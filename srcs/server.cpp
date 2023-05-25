@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/25 16:11:53 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/25 19:05:42 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,9 +113,8 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data){
 			}
 			else {
 			std::string message(buffer);
-			message.erase(message.find_last_not_of("\n\r") + 1);
 			Request	object;
-
+	
 			object.parseRequest(message);
 			if (!object.getcmd().compare(0, object.getcmd().length(), "PASS"))
 				PASS(object.getRequest(), guest[vec_fd[i].fd]);
@@ -123,30 +122,20 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data){
 				NICK(object.getRequest(), guest[vec_fd[i].fd]);
 			else if (!object.getcmd().compare(0, object.getcmd().length(), "USER"))
 				USER(object.getRequest(), guest[vec_fd[i].fd]);    
-			// else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
-			// 	JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
-			// else if (!object.getcmd().compare(0, object.getcmd().length(), "PRIVMSG"))
-			// 	PRIVMSG(object.getRequest(), guest[vec_fd[i].fd]);
-			// else if (!object.getcmd().compare(0, object.getcmd().length(), "KICK"))
-			// 	KICK(object.getRequest(), guest[vec_fd[i].fd]);
-			// else if (!object.getcmd().compare(0, object.getcmd().length(), "INVITE"))
-			// 	INVITE(object.getRequest(), guest[vec_fd[i].fd]);    
-			// else if (!object.getcmd().compare(0, object.getcmd().length(), "TOPIC"))
-			// 	TOPIC(object.getRequest(), guest[vec_fd[i].fd]);
-			// else if (!object.getcmd().compare(0, object.getcmd().length(), "MODE"))
-			// 	MODE(object.getRequest(), guest[vec_fd[i].fd]);
+			else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
+				JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
 			else
 				send_message(vec_fd[i].fd, "Error: No Enough Arguments\n");
 		}
-		}
 	}	
 }
-
+}
 
 //// COMMANDS
 
 void irc_server::PASS(std::vector<std::string> request, Client &client)
 {
+	request[0].erase(std::remove(request[0].begin(), request[0].end(), '\n'), request[0].end());
 	if (!request.size()){
 		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "PASS", client.getUserName()));
 		return;
@@ -168,6 +157,7 @@ void irc_server::PASS(std::vector<std::string> request, Client &client)
 
 void irc_server::NICK(std::vector<std::string> request, Client &client)
 {
+	request[0].erase(std::remove(request[0].begin(), request[0].end(), '\n'), request[0].end());
 	if (!request.size()){
 		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname(), client.getUserName()));
 	}
@@ -206,42 +196,46 @@ void irc_server::USER(std::vector<std::string> request, Client &client){
 }
 
 
-// void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client) {
-// 	if (!_request.size()) {
-// 		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN", client.getUserName()));
-// 	} else {
-// 		// Channel name must be started with '&', '#', '+' or '!' of length up to fifty (50) characters
-// 		// JOIN #test^Dtest
-// 		if (!client.getUserName().length()) {
-// 			send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
-// 			return ;
-// 		}
-// 		logger.log(INFO, parametrs);
-// 		if (parametrs[0] != '&' || parametrs[0] != '#' || parametrs[0] != '+' || parametrs[0] != '!'
-// 			|| parametrs.find(",") != std::string::npos) {
-// 			send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), parametrs));
-// 			return ;
-// 		}
-// 		if (!channels.size()) {
-// 			logger.log(DEBUG, client.getNickname());
-// 			channels.push_back(Channel(parametrs, client));
-// 		} else {
-// 			std::vector<Channel>::iterator it = findChannelByName(parametrs);
+void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client) {
+	(void) client;
+	for (size_t i = 0; i < _request.size(); i++){
+		std::cout << _request[i].first << ":" << _request[i].second << std::endl;
+	}
+	// if (!_request.size()) {
+	// 	send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN", client.getUserName()));
+	// } else {
+	// 	// Channel name must be started with '&', '#', '+' or '!' of length up to fifty (50) characters
+	// 	// JOIN #test^Dtest
+	// 	if (!client.getUserName().length()) {
+	// 		send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
+	// 		return ;
+	// 	}
+	// 	logger.log(INFO, parametrs);
+	// 	if (parametrs[0] != '&' || parametrs[0] != '#' || parametrs[0] != '+' || parametrs[0] != '!'
+	// 		|| parametrs.find(",") != std::string::npos) {
+	// 		send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), parametrs));
+	// 		return ;
+	// 	}
+	// 	if (!channels.size()) {
+	// 		logger.log(DEBUG, client.getNickname());
+	// 		channels.push_back(Channel(parametrs, client));
+	// 	} else {
+	// 		std::vector<Channel>::iterator it = findChannelByName(parametrs);
 
-// 			if (it != channels.end()) {
-// 				logger.log(DEBUG, "User request to join this channel");
-// 				if (!it->join_user(client)) {
-// 					send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), parametrs));
-// 					return ;
-// 				}
-// 			} else {
-// 				channels.push_back(Channel(parametrs, client));
-// 			}
-// 			it = findChannelByName(parametrs);
-// 			logger.log(DEBUG, "channel " + parametrs + " has "+ std::to_string(it->getUsers().size()) + " members");
-// 		}
-// 	}
-// }
+	// 		if (it != channels.end()) {
+	// 			logger.log(DEBUG, "User request to join this channel");
+	// 			if (!it->join_user(client)) {
+	// 				send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), parametrs));
+	// 				return ;
+	// 			}
+	// 		} else {
+	// 			channels.push_back(Channel(parametrs, client));
+	// 		}
+	// 		it = findChannelByName(parametrs);
+	// 		logger.log(DEBUG, "channel " + parametrs + " has "+ std::to_string(it->getUsers().size()) + " members");
+	// 	}
+	// }
+}
 
 // void irc_server::PRIVMSG(std::vector<std::string> request, Client& client) {
 // 	(void) client;
