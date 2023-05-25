@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/24 18:51:51 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/25 16:11:53 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,8 +206,8 @@ void irc_server::USER(std::vector<std::string> request, Client &client){
 }
 
 
-// void irc_server::JOIN(std::string parametrs, Client& client) {
-// 	if (!parametrs.length()) {
+// void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client) {
+// 	if (!_request.size()) {
 // 		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN", client.getUserName()));
 // 	} else {
 // 		// Channel name must be started with '&', '#', '+' or '!' of length up to fifty (50) characters
@@ -243,9 +243,8 @@ void irc_server::USER(std::vector<std::string> request, Client &client){
 // 	}
 // }
 
-// void irc_server::PRIVMSG(std::string parametrs, Client& client) {
+// void irc_server::PRIVMSG(std::vector<std::string> request, Client& client) {
 // 	(void) client;
-// 	(void) parametrs;
 // 	// if (parametrs[0] == '&' || parametrs[0] == '#' || parametrs[0] == '+' || parametrs[0] == '!') {
 // 		// PRIVMSG #madrid hello world
 // 	// logger.log(DEBUG, "Send messages to channel " + parametrs);
@@ -255,10 +254,9 @@ void irc_server::USER(std::vector<std::string> request, Client &client){
 // 			send_message(it->second.getFdNumber(), "Hello world\n");
 // 		}
 // 	}
-// 	// }
 // }
 
-// void	irc_server::KICK(std::string parametrs, Client& client) {
+// void	irc_server::KICK(std::vector<std::string> request, Client& client) {
 // 	logger.log(INFO, "kick command for channel");
 // 	std::size_t pos = parametrs.find(" ");
 // 	if (pos != std::string::npos) {
@@ -299,20 +297,17 @@ void irc_server::USER(std::vector<std::string> request, Client &client){
 // 	}
 // }
 
-// void	irc_server::INVITE(std::string parametrs, Client& client) {
-// 	(void) parametrs;
+// void	irc_server::INVITE(std::vector<std::string> request, Client& client) {
 // 	(void) client;
 // 	logger.log(INFO, "invite command");
 // }
 
-// void	irc_server::TOPIC(std::string parametrs, Client& client) {
-// 	(void) parametrs;
+// void	irc_server::TOPIC(std::vector<std::string> request, Client& client) {
 // 	(void) client;
 // 	logger.log(INFO, "topic command");
 // }
 
-// void	irc_server::MODE(std::string parametrs, Client& client) {
-// 	(void) parametrs;
+// void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 // 	(void) client;
 // 	logger.log(INFO, "mode command");
 // }
