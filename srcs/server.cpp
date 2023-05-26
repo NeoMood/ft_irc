@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/25 19:05:42 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/26 19:21:39 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,51 +84,54 @@ void	irc_server::multipleconnection(){
 void	irc_server::AcceptToIncomingconnection(Client& Client_data){
 	char buffer[BUFFER_SIZE];
 	for (size_t i = 0; i < vec_fd.size(); i++){
-		if (vec_fd[i].revents & POLLIN && i == 0){
-			struct sockaddr_in client_addr;
-			socklen_t client_len = sizeof(client_addr);
-			accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
-			if (accept_fd == -1){
-				std::cerr << "accept: " << std::strerror(errno) << std::endl;
-				exit (EXIT_FAILURE);
-			}
-			Client_data.setfd_number(accept_fd);
-			Client_data.setIPAddress(inet_ntoa(client_addr.sin_addr));
-			guest[accept_fd] = Client_data;
-			pollfd client_fd;
-			client_fd.fd = accept_fd;
-			client_fd.events = POLLIN;
-			vec_fd.push_back(client_fd);
-		}
-		else if (vec_fd[i].revents & POLLIN){
-			std::memset(&buffer, 0, sizeof(buffer));
-			int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
-			if (nbytes == -1){
-				std::cerr << "recv: " << std::strerror(errno) << std::endl;
-			}
-			else if (nbytes == 0){
-				close(vec_fd[i].fd);
-				vec_fd.erase(vec_fd.begin() + i);
-				std::cout << "See you later!" << std::endl;
+		if (vec_fd[i].revents & POLLIN){
+			if (vec_fd[i].fd == this->socket_fd){
+				
+				struct sockaddr_in client_addr;
+				socklen_t client_len = sizeof(client_addr);
+				accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
+				if (accept_fd == -1){
+					std::cerr << "accept: " << std::strerror(errno) << std::endl;
+					exit (EXIT_FAILURE);
+				}
+				Client_data.setfd_number(accept_fd);
+				Client_data.setIPAddress(inet_ntoa(client_addr.sin_addr));
+				guest[accept_fd] = Client_data;
+				pollfd client_fd;
+				client_fd.fd = accept_fd;
+				client_fd.events = POLLIN;
+				vec_fd.push_back(client_fd);
 			}
 			else {
-			std::string message(buffer);
-			Request	object;
-	
-			object.parseRequest(message);
-			if (!object.getcmd().compare(0, object.getcmd().length(), "PASS"))
-				PASS(object.getRequest(), guest[vec_fd[i].fd]);
-			else if (!object.getcmd().compare(0, object.getcmd().length(), "NICK"))
-				NICK(object.getRequest(), guest[vec_fd[i].fd]);
-			else if (!object.getcmd().compare(0, object.getcmd().length(), "USER"))
-				USER(object.getRequest(), guest[vec_fd[i].fd]);    
-			else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
-				JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
-			else
-				send_message(vec_fd[i].fd, "Error: No Enough Arguments\n");
-		}
-	}	
-}
+				std::memset(&buffer, 0, sizeof(buffer));
+				int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
+				if (nbytes == -1){
+					std::cerr << "recv: " << std::strerror(errno) << std::endl;
+				}
+				else if (nbytes == 0){
+					close(vec_fd[i].fd);
+					vec_fd.erase(vec_fd.begin() + i);
+					std::cout << "See you later!" << std::endl;
+				}
+				else {
+					std::string message(buffer);
+					Request	object;
+
+					object.parseRequest(message);
+					if (!object.getcmd().compare(0, object.getcmd().length(), "PASS"))
+						PASS(object.getRequest(), guest[vec_fd[i].fd]);
+					else if (!object.getcmd().compare(0, object.getcmd().length(), "NICK"))
+						NICK(object.getRequest(), guest[vec_fd[i].fd]);
+					else if (!object.getcmd().compare(0, object.getcmd().length(), "USER"))
+						USER(object.getRequest(), guest[vec_fd[i].fd]);    
+					else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
+						JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
+					else
+						send_message(vec_fd[i].fd, "Error: No Enough Arguments\n");
+					}
+			}
+		}	
+	}
 }
 
 //// COMMANDS
