@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/26 19:21:39 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/27 23:44:50 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,10 +114,16 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data){
 					std::cout << "See you later!" << std::endl;
 				}
 				else {
-					std::string message(buffer);
 					Request	object;
-
-					object.parseRequest(message);
+					guest.at(vec_fd[i].fd).MessageFormat += message(buffer);
+					
+					size_t pos = guest.at(vec_fd[i].fd).MessageFormat.find_firt_of("\n\r");
+					while (pos != std::string::npos){
+						std::string _message = guest.at(vec_fd[i].fd).MessageFormat.substr(0, pos);
+						if (pos == std::string::npos)
+							break;
+					}
+					object.parseRequest(_message);
 					if (!object.getcmd().compare(0, object.getcmd().length(), "PASS"))
 						PASS(object.getRequest(), guest[vec_fd[i].fd]);
 					else if (!object.getcmd().compare(0, object.getcmd().length(), "NICK"))
@@ -126,9 +132,6 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data){
 						USER(object.getRequest(), guest[vec_fd[i].fd]);    
 					else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
 						JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
-					else
-						send_message(vec_fd[i].fd, "Error: No Enough Arguments\n");
-					}
 			}
 		}	
 	}

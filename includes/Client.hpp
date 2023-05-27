@@ -54,6 +54,7 @@ class Client{
     public:
         Client();
         ~Client();
+        std::string MessageFormat;
     // Setters
         void	setNicknameSited(bool _Nicknamesited);
         void	setUsernameSited(bool _Usernamesited);
