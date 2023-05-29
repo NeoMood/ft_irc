@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/24 18:36:03 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/27 20:58:11 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ class irc_server{
         void init_sockets(void);
 		void bind_sockets(void);
 		void listenToIncomingconnection(void);
-		void AcceptToIncomingconnection(Client& Client_data);
+		void AcceptIncomingconnection(Client& Client_data);
 		void multipleconnection(void);
 		bool check_param(const char *nickname, Client &client);
 		void ReusableSocket(void);

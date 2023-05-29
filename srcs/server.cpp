@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/26 19:21:39 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/29 18:12:28 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,57 +14,67 @@
 #include "../includes/Client.hpp"
 #include "../includes/Reply.hpp"
 #include "../includes/Request.hpp"
-#include <algorithm>
 
-void    irc_server::init_sockets(void){
-    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd == -1){
-        std::cerr << "Socket: " << std::strerror(errno) << std::endl;
-        exit (EXIT_FAILURE);
-    }
+void irc_server::init_sockets(void)
+{
+	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (socket_fd == -1)
+	{
+		std::cerr << "Socket: " << std::strerror(errno) << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
-void	irc_server::ReusableSocket(void){
-	int	flag = 1;
-	if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) == -1){
+void irc_server::ReusableSocket(void)
+{
+	int flag = 1;
+	if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) == -1)
+	{
 		std::cerr << "Set Socket: " << std::strerror(errno) << std::endl;
-		close (socket_fd);
-        exit (EXIT_FAILURE);
+		close(socket_fd);
+		exit(EXIT_FAILURE);
 	}
 }
 
-void	irc_server::non_blocking(void){
-	if (fcntl(socket_fd, F_SETFL, O_NONBLOCK) == -1){
+void irc_server::non_blocking(void)
+{
+	if (fcntl(socket_fd, F_SETFL, O_NONBLOCK) == -1)
+	{
 		std::cerr << "fcntl: " << std::strerror(errno) << std::endl;
-		close (socket_fd);
-        exit (EXIT_FAILURE);
+		close(socket_fd);
+		exit(EXIT_FAILURE);
 	}
 }
 
-void	irc_server::bind_sockets(void){
+void irc_server::bind_sockets(void)
+{
 	struct sockaddr_in server_addr;
 	std::memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(this->portno);
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) == -1){
+	if (bind(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+	{
 		std::cerr << "bind: " << std::strerror(errno) << std::endl;
-		close (socket_fd);
-        exit (EXIT_FAILURE);
+		close(socket_fd);
+		exit(EXIT_FAILURE);
 	}
 }
 
-void	irc_server::listenToIncomingconnection(){
-	if (listen(socket_fd, SOMAXCONN) == -1){
+void irc_server::listenToIncomingconnection()
+{
+	if (listen(socket_fd, SOMAXCONN) == -1)
+	{
 		std::cerr << "listen: " << std::strerror(errno) << std::endl;
-		close (socket_fd);
-        exit (EXIT_FAILURE);
+		close(socket_fd);
+		exit(EXIT_FAILURE);
 	}
 }
 
-void	irc_server::multipleconnection(){
-	Client	Client_data;
-	pollfd	server_fd;
+void irc_server::multipleconnection()
+{
+	Client Client_data;
+	pollfd server_fd;
 
 	server_fd.fd = socket_fd;
 	server_fd.events = POLLIN;
@@ -72,27 +82,33 @@ void	irc_server::multipleconnection(){
 	while (true)
 	{
 		poll_fds = poll(&vec_fd[0], vec_fd.size(), -1);
-		if ( poll_fds == -1){
+		if (poll_fds == -1)
+		{
 			std::cerr << "poll: " << std::strerror(errno) << std::endl;
-			close (socket_fd);
-			exit (EXIT_FAILURE);
+			close(socket_fd);
+			exit(EXIT_FAILURE);
 		}
-		AcceptToIncomingconnection(Client_data);
+		AcceptIncomingconnection(Client_data);
 	}
 }
 
-void	irc_server::AcceptToIncomingconnection(Client& Client_data){
+void irc_server::AcceptIncomingconnection(Client &Client_data)
+{
 	char buffer[BUFFER_SIZE];
-	for (size_t i = 0; i < vec_fd.size(); i++){
-		if (vec_fd[i].revents & POLLIN){
-			if (vec_fd[i].fd == this->socket_fd){
-				
+	for (size_t i = 0; i < vec_fd.size(); i++)
+	{
+		if (vec_fd[i].revents & POLLIN)
+		{
+			if (vec_fd[i].fd == this->socket_fd)
+			{
+
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
 				accept_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &client_len);
-				if (accept_fd == -1){
+				if (accept_fd == -1)
+				{
 					std::cerr << "accept: " << std::strerror(errno) << std::endl;
-					exit (EXIT_FAILURE);
+					exit(EXIT_FAILURE);
 				}
 				Client_data.setfd_number(accept_fd);
 				Client_data.setIPAddress(inet_ntoa(client_addr.sin_addr));
@@ -102,35 +118,48 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data){
 				client_fd.events = POLLIN;
 				vec_fd.push_back(client_fd);
 			}
-			else {
+			else
+			{
 				std::memset(&buffer, 0, sizeof(buffer));
 				int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
-				if (nbytes == -1){
+				if (nbytes == -1)
+				{
 					std::cerr << "recv: " << std::strerror(errno) << std::endl;
 				}
-				else if (nbytes == 0){
+				else if (nbytes == 0)
+				{
 					close(vec_fd[i].fd);
 					vec_fd.erase(vec_fd.begin() + i);
 					std::cout << "See you later!" << std::endl;
 				}
-				else {
+				else
+				{
+					Request object;
+					std::string _message;
 					std::string message(buffer);
-					Request	object;
+					guest.at(vec_fd[i].fd).MessageFormat += message;
 
-					object.parseRequest(message);
-					if (!object.getcmd().compare(0, object.getcmd().length(), "PASS"))
-						PASS(object.getRequest(), guest[vec_fd[i].fd]);
-					else if (!object.getcmd().compare(0, object.getcmd().length(), "NICK"))
-						NICK(object.getRequest(), guest[vec_fd[i].fd]);
-					else if (!object.getcmd().compare(0, object.getcmd().length(), "USER"))
-						USER(object.getRequest(), guest[vec_fd[i].fd]);    
-					else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
-						JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
-					else
-						send_message(vec_fd[i].fd, "Error: No Enough Arguments\n");
+					size_t pos = guest.at(vec_fd[i].fd).MessageFormat.find_first_of("\r\n");
+					while (pos != std::string::npos)
+					{
+						_message = guest.at(vec_fd[i].fd).MessageFormat.substr(0, pos);
+						object.parseRequest(_message);
+						if (!object.getcmd().compare(0, object.getcmd().length(), "PASS"))
+							PASS(object.getRequest(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "NICK"))
+							NICK(object.getRequest(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "USER"))
+							USER(object.getRequest(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "KICK"))
+							KICK(object.getRequest(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
+							JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
+						_message = guest.at(vec_fd[i].fd).MessageFormat.erase(0, pos + 2);
+						pos = guest.at(vec_fd[i].fd).MessageFormat.find_first_of("\r\n");
 					}
+				}
 			}
-		}	
+		}
 	}
 }
 
@@ -138,51 +167,62 @@ void	irc_server::AcceptToIncomingconnection(Client& Client_data){
 
 void irc_server::PASS(std::vector<std::string> request, Client &client)
 {
-	request[0].erase(std::remove(request[0].begin(), request[0].end(), '\n'), request[0].end());
-	if (!request.size()){
+	if (!request.size())
+	{
 		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "PASS", client.getUserName()));
 		return;
 	}
-	else if (request[0] != this->passwd){
+	else if (request[0] != this->passwd)
+	{
 		send_message(client.getFdNumber(), ERR_PASSWDMISMATCH(client.getNickname(), client.getUserName()));
 		return;
 	}
-	else if (request[0] == this->passwd && !client.getPasswordApproved()){
+	else if (request[0] == this->passwd && !client.getPasswordApproved())
+	{
 		std::cout << "Password approved, you can set a nickname" << std::endl;
 		client.setPasswordApproved(true);
-		return ;
+		return;
 	}
-	else if (client.getPasswordApproved() == true){
+	else if (client.getPasswordApproved() == true)
+	{
 		send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName()));
-		return ;
+		return;
 	}
 }
 
 void irc_server::NICK(std::vector<std::string> request, Client &client)
 {
-	request[0].erase(std::remove(request[0].begin(), request[0].end(), '\n'), request[0].end());
-	if (!request.size()){
+	if (!request.size())
+	{
 		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname(), client.getUserName()));
 	}
-	else if (check_param(request[0].c_str(), client) && client.getPasswordApproved()){
-		if (nicknames.find(request[0]) == nicknames.end()){
+	else if (check_param(request[0].c_str(), client) && client.getPasswordApproved())
+	{
+		if (nicknames.find(request[0]) == nicknames.end())
+		{
 			client.setNickname(request[0]);
 			std::cout << "Your Nickname is: " << client.getNickname() << std::endl;
 			client.setNicknameSited(true);
 			nicknames.insert(request[0]);
 		}
-		else{
+		else
+		{
 			send_message(client.getFdNumber(), ERR_NICKNAMEINUSE(request[0], client.getUserName()));
 		}
 	}
 }
 
-void irc_server::USER(std::vector<std::string> request, Client &client){
-	if (!request.size())
+void irc_server::USER(std::vector<std::string> request, Client &client)
+{
+
+	if (request.size() != 4)
 		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "USER", client.getUserName()));
-	else{
-		if (client.getPasswordApproved() && client.getNickNameSited()){
-			if (!client.getUserNameSited()){
+	else
+	{
+		if (client.getPasswordApproved() && client.getNickNameSited())
+		{
+			if (!client.getUserNameSited())
+			{
 				client.setUserName(request[0]);
 				client.setMode(request[1]);
 				client.setHostname(request[2]);
@@ -198,12 +238,15 @@ void irc_server::USER(std::vector<std::string> request, Client &client){
 	}
 }
 
-
-void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client) {
-	(void) client;
-	for (size_t i = 0; i < _request.size(); i++){
-		std::cout << _request[i].first << ":" << _request[i].second << std::endl;
-	}
+void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client &client)
+{
+	(void) _request;
+	(void)client;
+	// for (size_t i = 0; i < _request.size(); i++)
+	// {
+	// 	std::cout << _request[i].first << " : " << _request[i].second << std::endl;
+	// 	std::cout << _request[i].first.length() << " : " << _request[i].second.length() << std::endl;
+	// }
 	// if (!_request.size()) {
 	// 	send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN", client.getUserName()));
 	// } else {
@@ -253,46 +296,52 @@ void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request
 // 	}
 // }
 
-// void	irc_server::KICK(std::vector<std::string> request, Client& client) {
-// 	logger.log(INFO, "kick command for channel");
-// 	std::size_t pos = parametrs.find(" ");
-// 	if (pos != std::string::npos) {
-// 		std::string channelName = parametrs.substr(0, pos);
-// 		parametrs.erase(0, pos + 1);
-// 		// try {
-// 		std::vector<Channel>::iterator it_chan = findChannelByName(channelName);
-// 		if (it_chan != channels.end()) {
-// 			// channel.ban_user(client);
-// 			logger.log(DEBUG, "kick the user " + parametrs);
-// 			std::map<std::string, Client&> users = it_chan->getUsers();
-// 			std::map<std::string, Client&>::iterator it = users.end();
-// 			// logger.log(DEBUG, "User found " + std::to_string(it_chan->getUsers().size()));
-// 			for (std::map<std::string, Client&>::iterator t = users.begin(); t != users.end(); t++) {
-// 				if (t->first == parametrs) {
-// 					it = t;
-// 					break ;
-// 				}
-// 			}
-// 			if (it != users.end()) {
-// 				it_chan->ban_user(it->second);
-// 			} else {
-// 				send_message(client.getFdNumber(), ERR_USERNOTINCHANNEL(client.getNickname(), parametrs, channelName));
-// 				return ;
-// 			}
-			
-// 		} else {
-// 			send_message(client.getFdNumber(), ERR_NOSUCHCHANNEL(client.getNickname(), channelName));
-// 			return ;
-// 		}
-// 		// } catch(ChannelNotFound e) {
-// 		// }
-// 		// for (size_t i = 0; i < channels.size(); i++) {
-// 		// 	if (!channels[i].getChannelName().compare(0, parametrs.length(), parametrs)) {
-// 		// 		//
-// 		// 	}
-// 		// }
-// 	}
-// }
+void irc_server::KICK(std::vector<std::string> request, Client &client)
+{
+	(void)client;
+	for (size_t i = 0; i < request.size(); i++)
+	{
+		std::cout << request[i] << std::endl;
+		std::cout << request[i].size() << std::endl;
+	}
+	// std::size_t pos = parametrs.find(" ");
+	// if (pos != std::string::npos) {
+	// 	std::string channelName = parametrs.substr(0, pos);
+	// 	parametrs.erase(0, pos + 1);
+	// 	// try {
+	// 	std::vector<Channel>::iterator it_chan = findChannelByName(channelName);
+	// 	if (it_chan != channels.end()) {
+	// 		// channel.ban_user(client);
+	// 		logger.log(DEBUG, "kick the user " + parametrs);
+	// 		std::map<std::string, Client&> users = it_chan->getUsers();
+	// 		std::map<std::string, Client&>::iterator it = users.end();
+	// 		// logger.log(DEBUG, "User found " + std::to_string(it_chan->getUsers().size()));
+	// 		for (std::map<std::string, Client&>::iterator t = users.begin(); t != users.end(); t++) {
+	// 			if (t->first == parametrs) {
+	// 				it = t;
+	// 				break ;
+	// 			}
+	// 		}
+	// 		if (it != users.end()) {
+	// 			it_chan->ban_user(it->second);
+	// 		} else {
+	// 			send_message(client.getFdNumber(), ERR_USERNOTINCHANNEL(client.getNickname(), parametrs, channelName));
+	// 			return ;
+	// 		}
+
+	// 	} else {
+	// 		send_message(client.getFdNumber(), ERR_NOSUCHCHANNEL(client.getNickname(), channelName));
+	// 		return ;
+	// 	}
+	// 	// } catch(ChannelNotFound e) {
+	// 	// }
+	// 	// for (size_t i = 0; i < channels.size(); i++) {
+	// 	// 	if (!channels[i].getChannelName().compare(0, parametrs.length(), parametrs)) {
+	// 	// 		//
+	// 	// 	}
+	// 	// }
+	// }
+}
 
 // void	irc_server::INVITE(std::vector<std::string> request, Client& client) {
 // 	(void) client;
@@ -311,33 +360,42 @@ void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request
 
 /// GETTERS AND SETTERS
 
-int	irc_server::getSocketFd(void){
+int irc_server::getSocketFd(void)
+{
 	return (this->socket_fd);
 }
 
-void	irc_server::setSocketFd(int socket_fd){
+void irc_server::setSocketFd(int socket_fd)
+{
 	this->socket_fd = socket_fd;
 }
 
-void	irc_server::setPassword(std::string passwd){
+void irc_server::setPassword(std::string passwd)
+{
 	this->passwd = passwd;
 }
 
-std::string	irc_server::getPassword(){
-	return(this->passwd);
+std::string irc_server::getPassword()
+{
+	return (this->passwd);
 }
 
-std::vector<Channel>::iterator irc_server::findChannelByName(std::string channel) {
-	for (std::vector<Channel>::iterator it = channels.begin() ; it != channels.end(); ++it) {
-		if (it->getChannelName() == channel) {
+std::vector<Channel>::iterator irc_server::findChannelByName(std::string channel)
+{
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
+	{
+		if (it->getChannelName() == channel)
+		{
 			return it;
 		}
 	}
 	return channels.end();
 }
 
-irc_server::irc_server(): channels(), logger(Logger::getLogger()){
+irc_server::irc_server() : channels(), logger(Logger::getLogger())
+{
 }
 
-irc_server::~irc_server(){
+irc_server::~irc_server()
+{
 }

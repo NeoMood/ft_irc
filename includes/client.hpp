@@ -14,7 +14,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <arpa/inet.h> 
+#include <arpa/inet.h>
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
@@ -27,9 +27,10 @@
 #include <stdexcept>
 #include <map>
 
-#pragma	once
+#pragma once
 
-typedef enum {
+typedef enum
+{
     i = 0,
     t = 1,
     k = 2,
@@ -38,43 +39,45 @@ typedef enum {
 
 } channel_mode_t;
 
-class Client{
-    private:
-        bool    PasswordApproved;
-        bool    NicknameSited;
-        bool    UsernameSited;
-        std::string Nickname;
-        std::string	IPAddress;
-        std::string UserName;
-        std::string mode;
-        std::string hostname;
-        std::string RealName;
-        int FdNumber;
-        std::vector<channel_mode_t> channel_mode;
-    public:
-        Client();
-        ~Client();
+class Client
+{
+private:
+    bool PasswordApproved;
+    bool NicknameSited;
+    bool UsernameSited;
+    std::string Nickname;
+    std::string IPAddress;
+    std::string UserName;
+    std::string mode;
+    std::string hostname;
+    std::string RealName;
+    int FdNumber;
+    std::vector<channel_mode_t> channel_mode;
+
+public:
+    Client();
+    ~Client();
+    std::string MessageFormat;
     // Setters
-        void	setNicknameSited(bool _Nicknamesited);
-        void	setUsernameSited(bool _Usernamesited);
-		void	setIPAddress(std::string _IPAdresss);
-        void    setHostname(std::string _hostname);
-        void    setRealName(std::string _realname);
-		void	setPasswordApproved(bool _Password);
-        void    setUserName(std::string _user);
-        void	setfd_number(int fd_number);
-        void    setMode(std::string _mode);
-        void	setNickname(std::string Nickname);
-        void    setChannelMode(channel_mode_t _mode);
+    void setNicknameSited(bool _Nicknamesited);
+    void setUsernameSited(bool _Usernamesited);
+    void setIPAddress(std::string _IPAdresss);
+    void setHostname(std::string _hostname);
+    void setRealName(std::string _realname);
+    void setPasswordApproved(bool _Password);
+    void setUserName(std::string _user);
+    void setfd_number(int fd_number);
+    void setMode(std::string _mode);
+    void setNickname(std::string Nickname);
+    void setChannelMode(channel_mode_t _mode);
     // Getters
-        bool		getNickNameSited(void);
-        bool		getUserNameSited(void);
-        int			getFdNumber(void);
-        bool		getPasswordApproved(void);
-        std::string	getNickname(void);
-        std::string	getHostname(void);
-        std::string	getRealName(void);
-        std::string	getUserName(void);
-        std::string	getMode(void);
-        
+    bool getNickNameSited(void);
+    bool getUserNameSited(void);
+    int getFdNumber(void);
+    bool getPasswordApproved(void);
+    std::string getNickname(void);
+    std::string getHostname(void);
+    std::string getRealName(void);
+    std::string getUserName(void);
+    std::string getMode(void);
 };
