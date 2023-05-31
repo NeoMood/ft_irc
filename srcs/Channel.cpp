@@ -2,13 +2,26 @@
 
 Channel::Channel(std::string name, Client& _operator): __name(name), __topic(), __key(""), mask(), support_modes(true), __owner(_operator), __users(), __banned_users(), __invited_users(), __online_users(1) {
     mask += name[0];
-    __is_invite_only = true; // change to false
+    __is_invite_only = false;
     if (mask == "+") {
         support_modes = false;
     }
     if (mask == "!") {
         __owner.setChannelMode(o);
     }
+}
+
+bool Channel::isAnOperatorOrOwner(Client& clinet) {
+    if (!clinet.getNickname().compare(0, clinet.getNickname().length(), __owner.getNickname())) {
+        return true;
+    } else {
+        for (std::map<std::string, Client&>::iterator it = __operators.begin(); it != __operators.end(); it++) {
+            if (clinet.getNickname() == it->first) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool Channel::isInviteOnly() const {

@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/31 16:55:49 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/05/31 17:28:25 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -381,15 +381,20 @@ void	irc_server::INVITE(std::vector<std::string> request, Client& client) {
 	std::vector<Channel>::iterator it = findChannelByName(request[0]);
 	if (it != channels.end()) {
 		logger.log(DEBUG, "Channel found " + request[0]);
-		std::map<int, Client>::iterator u = findClient(request[1]);
-		if (u != guest.end()) {
-			if (u->first != client.getFdNumber()) {
-				it->invite_user(u->second);
+		if (it->isAnOperatorOrOwner(client)) {
+			std::map<int, Client>::iterator u = findClient(request[1]);
+			if (u != guest.end()) {
+				if (u->first != client.getFdNumber()) {
+					it->invite_user(u->second);
+				} else {
+					send_message(client.getFdNumber(), "Can not invite your self\n");
+				}
 			} else {
-				send_message(client.getFdNumber(), "Can not invite your self\n");
+				send_message(client.getFdNumber(), "User not found\n");
 			}
 		} else {
-			send_message(client.getFdNumber(), "User not found\n");
+			logger.log(DEBUG, "Action can not be permited");
+			return ;
 		}
 	} else {
 		logger.log(DEBUG, "Channel not found");

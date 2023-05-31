@@ -41,6 +41,7 @@ class Channel {
         void setInviteOnly(bool inviteOnly);
         void setChannelKey(std::string key);
         bool is_already_join(Client& client);
+        bool isAnOperatorOrOwner(Client& clinet);
         int join_user(Client& client);
         int invite_user(Client& client);
         int remove_user(Client& client);
