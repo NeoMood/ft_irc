@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/24 18:36:03 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/31 16:38:15 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ class irc_server{
 		std::vector<pollfd> vec_fd;
 		std::vector<Channel> channels;
 		Logger& logger;
+		std::string server_pass;
+		bool checkChannelMask(char c);
     public:
 		class ChannelNotFound: public std::exception {
 			public:
@@ -84,10 +86,11 @@ class irc_server{
 		void	PASS(std::vector<std::string> request, Client &client); // yahya
 		void	NICK(std::vector<std::string> request, Client &client); // yahya
 		void	USER(std::vector<std::string> request, Client &client); // yahya
-		void	PRIVMSG(std::vector<std::string> request, Client& client); // ayoub send msg to channel
-		void	KICK(std::vector<std::string> request, Client& client); // ayoub
+		void	PRIVMSG(std::vector<std::string> request, Client& client); // ayoub send msg to channel and user
+		void	KICK(std::vector<std::pair<std::string, std::string> > _request, Client& client); // ayoub
 		void	INVITE(std::vector<std::string> request, Client& client); // saad
 		void	TOPIC(std::vector<std::string> request, Client& client); // saad
-		void	MODE(std::vector<std::string> request, Client& client); // saad mode for user, ayoub mode for channel
+		void	MODE(std::vector<std::string> request, Client& client); // ayoub mode for channel
 		std::vector<Channel>::iterator findChannelByName(std::string channel);
+		std::map<int, Client>::iterator findClient(std::string nickname);
 };

@@ -44,9 +44,9 @@
 
 #define ERR_NOSUCHNICK          "401"
 #define ERR_NOSUCHSERVER        "402"
-#define ERR_NOSUCHCHANNEL(nick, chan)   "403 " + nick + " " + chan + " :No such channel\n"
+#define ERR_NOSUCHCHANNEL(nick, chan)   ":irc_server 403 " + nick + " " + chan + " :No such channel\n"
 #define ERR_CANNOTSENDTOCHAN    "404"
-#define ERR_TOOMANYTARGETS      "407"
+#define ERR_TOOMANYTARGETS(targets)      ":irc_server 407 " + targets + " :recipients. No message delivered\n"
 #define ERR_NORECIPIENT(cmd) std::string("411 :No recipient given ") + cmd + "\n"
 #define ERR_NOTEXTTOSEND(void) "412 :No text to send\n"
 #define ERR_UNKNOWNCOMMAND      "421"
@@ -57,7 +57,7 @@
 #define ERR_UNAVAILRESOURCE     "437"
 #define ERR_USERNOTINCHANNEL(nick, user, chan)    "441 " + nick + " " + user + " " + chan + " :They aren't on that channel\n"
 #define ERR_NOTONCHANNEL        "442"
-#define ERR_NOTREGISTERED(nick) "451" + nick + " :The client must be registred\n"
+#define ERR_NOTREGISTERED(nick) "451 " + nick + " :You have not registered\n"
 #define ERR_NEEDMOREPARAMS(nick, cmd, user)   ":" + nick + "!" + user + "@" + "irc_server" + " 461 " + nick + " " + cmd + " :Not enough parameters\n"
 #define ERR_ALREADYREGISTRED(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + " 462 " + nick + " :You may not reregister\n"
 #define ERR_PASSWDMISMATCH(nick, user) ":" + nick + "!" + user + "@" + "irc_server" + " 464 " + nick + " :Password incorrect\n"
@@ -65,11 +65,9 @@
 #define ERR_UNKNOWNMODE         "472"
 #define ERR_INVITEONLYCHAN      "473"
 #define ERR_BANNEDFROMCHAN(nick, chan)  "474 " + nick + " " + chan + " :Cannot join channel (+b)\n"
-#define ERR_BADCHANNELKEY       "475"
+#define ERR_BADCHANNELKEY(chan)         "475 " + chan + " :Invalid Key\n"
 #define ERR_BADCHANMASK(nick, chan)     "476 " + nick + " " + chan + " :Bad Channel Mask\n"
 #define ERR_NOPRIVILEGES        "481"
 #define ERR_CHANOPRIVSNEEDED(nick, chan)    "482 " + nick + " " + chan + " :You're not channel operator\n"
 #define ERR_UMODEUNKNOWNFLAG    "501"
 #define ERR_USERSDONTMATCH      "502"
-
-

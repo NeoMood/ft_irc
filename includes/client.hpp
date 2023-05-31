@@ -76,5 +76,6 @@ class Client{
         std::string	getRealName(void);
         std::string	getUserName(void);
         std::string	getMode(void);
+        std::string MessageFormat;
         
 };

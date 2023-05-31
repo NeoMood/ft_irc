@@ -1,7 +1,13 @@
-// PASS <password>
-// NICK <username>
-// USER <> <> <> <>
-// LIST
-// JOIN <server>
-// PRIVMSG <>
-// QUIT, crtl-D
+#pragma once
+
+#include <string>
+#include <iostream>
+
+
+class FileTransfer {
+    private:
+        std::string name;
+    public:
+        FileTransfer();
+        ~FileTransfer();
+};
