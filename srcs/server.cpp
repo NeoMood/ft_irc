@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/31 17:28:25 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/05/31 17:32:35 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -420,6 +420,8 @@ void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 			logger.log(DEBUG, "Channel not found");
 			return ;
 		}
+	} else {
+		// USER MODE
 	}
 }
 
