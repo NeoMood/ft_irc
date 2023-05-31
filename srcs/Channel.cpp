@@ -1,6 +1,6 @@
 #include "../includes/Channel.hpp"
 
-Channel::Channel(std::string name, Client& _operator): __name(name), __topic(), __key(""), mask(), support_modes(true), __owner(_operator), __users(), __banned_users(), __invited_users(), __online_users(1) {
+Channel::Channel(std::string name, Client& _operator): __name(name), __topic(), __key(""), mask(), support_modes(true), __owner(_operator), __users(), __banned_users(), __invited_users(), __online_users(1), __users_limit(-1) {
     mask += name[0];
     __is_invite_only = false;
     if (mask == "+") {
@@ -88,17 +88,17 @@ std::map<std::string, Client&>  Channel::getUsers() {
     return this->__users;
 }
 
-std::map<std::string, Client&>::iterator Channel::getUser(std::string nickname) {
+bool Channel::hasUser(std::string nickname) {
     // if (this->__users.find(nickname) != this->__users.end()) {
     //     return this->__users.find(nickname);
     // }
     for (std::map<std::string, Client&>::iterator it = __users.begin(); it != __users.end(); it++) {
         // std::cout << "nickname: " << it->first << " name " << nickname << std::endl;
         if (it->first == nickname) {
-            return it;
+            return true;
         }
     }
-    return this->__users.end();
+    return false;
 }
 
 int Channel::remove_user(Client& client) {
@@ -114,8 +114,15 @@ int Channel::ban_user(Client& client) {
 }
 
 int Channel::add_operator(Client& client) {
-    (void) client;
+    if (this->__operators.find(client.getNickname()) != this->__operators.end()) {
+        this->__operators.insert(std::pair<std::string, Client&>(client.getNickname(), client));
+        return 1;
+    }
     return 0;
+}
+
+void Channel::remove_operator(Client& client) {
+    this->__operators.erase(client.getNickname());
 }
 
 int Channel::unban_user(Client& client) {
@@ -140,6 +147,18 @@ bool Channel::hasKey() const {
 
 void Channel::setChannelKey(std::string key) {
     this->__key = key;
+}
+
+void Channel::setChannelLimit(int lmt) {
+    this->__users_limit = lmt;
+}
+
+int Channel::getUserLimit() const {
+    return this->__users_limit;
+}
+
+int Channel::getUsersTotal() {
+    return this->__users.size() + 1;
 }
 
 Channel::~Channel() {

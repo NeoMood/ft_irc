@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/31 17:32:35 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/05/31 18:25:09 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,6 +238,10 @@ void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request
 
 			if (it != channels.end()) {
 				logger.log(DEBUG, "User request to join channel: |" + pair.first + "|");
+				if (!it->is_already_join(client) &&  it->getUserLimit() != -1 && it->getUsersTotal() >= it->getUserLimit()) {
+					send_message(client.getFdNumber(), "Error we have reach channel limit\n");
+					return ;
+				}
 				if (it->hasKey()) {
 					// provide the key
 					logger.log(DEBUG, "channel has a key");
@@ -409,18 +413,91 @@ void	irc_server::TOPIC(std::vector<std::string> request, Client& client) {
 }
 
 void	irc_server::MODE(std::vector<std::string> request, Client& client) {
-	(void) request;
-	(void) client;
 	logger.log(DEBUG, "mode command");
 	if (request[0][0] == '#' || request[0][0] == '+' || request[0][0] == '!' || request[0][0] == '&') {
+		logger.log(DEBUG, "Basic implementation of mode operations on channels");
+		// channel mode
+		// . i: Set/remove Invite-only channel
+		// · t: Set/remove the restrictions of the TOPIC command to channel
+		// operators
+		// · k: Set/remove the channel key (password)
+		// · o: Give/take channel operator privilege
+		// . l: Set/remove the user limit to channel
 		std::vector<Channel>::iterator it = findChannelByName(request[0]);
 		if (it != channels.end()) {
+		// 	Numeric Replies:
+
+        //    ERR_NEEDMOREPARAMS              ERR_KEYSET
+        //    ERR_NOCHANMODES                 ERR_CHANOPRIVSNEEDED
+        //    ERR_USERNOTINCHANNEL            ERR_UNKNOWNMODE
+        //    RPL_CHANNELMODEIS
+        //    RPL_BANLIST                     RPL_ENDOFBANLIST
+        //    RPL_EXCEPTLIST                  RPL_ENDOFEXCEPTLIST
+        //    RPL_INVITELIST                  RPL_ENDOFINVITELIST
+        //    RPL_UNIQOPIS
 			logger.log(DEBUG, "Channel found " + request[0]);
-		} else {
+			if (it->isAnOperatorOrOwner(client)) {
+				logger.log(DEBUG, "user is an actual owner or operator of the channel");
+				std::string mode = request[1];
+				if (checkAction(mode) == ADD) {
+					logger.log(DEBUG, "mode prefix ADD");
+					if (mode == "+i") {
+						it->setInviteOnly(true);
+					} else if (mode == "+t") {
+						//
+					} else if (mode == "+k") {
+						it->setChannelKey(request[2]);
+					} else if (mode == "+o") {
+						std::map<int, Client>::iterator u = findClient(request[2]);
+						if (u != guest.end()) {
+							if (it->hasUser(request[2])) {
+									it->add_operator(u->second);
+							} else {
+								logger.log(DEBUG, "User not found in this channel");
+							}
+						} else {
+							logger.log(DEBUG, "user not found");
+						}
+					} else if (mode == "+l") {
+						it->setChannelLimit(std::atoi(request[2].c_str()));
+					}
+				}
+				else if (checkAction(mode) == REMOVE) {
+					logger.log(DEBUG, "mode prefix REMOVE");
+					if (mode == "-i") {
+						it->setInviteOnly(false);
+					} else if (mode == "-t") {
+						//
+					} else if (mode == "-k") {
+						it->setChannelKey("");
+					} else if (mode == "-o") {
+						std::map<int, Client>::iterator u = findClient(request[2]);
+						if (u != guest.end()) {
+							if (it->hasUser(request[2])) {
+									it->remove_operator(u->second);
+							} else {
+								logger.log(DEBUG, "User not found in this channel");
+							}
+						} else {
+							logger.log(DEBUG, "user not found");
+						}
+					} else if (mode == "-l") {
+						it->setChannelLimit(-1);
+					}
+				} else {
+					// UNKNOWN mode
+					logger.log(DEBUG, "Unkown mode prefix " + mode);
+				}
+			} else {
+				logger.log(DEBUG, "You are not an owner or an operator");
+			}
+		}
+		else {
 			logger.log(DEBUG, "Channel not found");
 			return ;
 		}
-	} else {
+	}
+	else {
 		// USER MODE
 	}
 }
@@ -462,6 +539,10 @@ std::map<int, Client>::iterator irc_server::findClient(std::string nickname) {
 		}
 	}
 	return guest.end();
+}
+
+e_action irc_server::checkAction(std::string mode) {
+	return mode[0] == '+' ? ADD : mode[0] == '-' ? REMOVE : UNKOWN;
 }
 
 irc_server::irc_server(): channels(), logger(Logger::getLogger()){

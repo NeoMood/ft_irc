@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/31 16:38:15 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/05/31 17:40:52 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,12 @@
 
 #pragma	once
 
+typedef enum {
+	UNKOWN = -1,
+	REMOVE = 0,
+	ADD = 1,
+} e_action;
+
 class irc_server{
 	private:
 		int	socket_fd;
@@ -51,6 +57,7 @@ class irc_server{
 		Logger& logger;
 		std::string server_pass;
 		bool checkChannelMask(char c);
+		e_action checkAction(std::string mode);
     public:
 		class ChannelNotFound: public std::exception {
 			public:
