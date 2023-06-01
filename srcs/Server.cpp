@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/29 18:18:24 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/06/01 19:57:29 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,14 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 				int nbytes = recv(vec_fd[i].fd, buffer, BUFFER_SIZE, 0);
 				if (nbytes == -1)
 				{
-					std::cerr << "recv: " << std::strerror(errno) << std::endl;
+					if (nbytes == EAGAIN ||  nbytes == EWOULDBLOCK)
+					{
+						continue;
+					}
+					else
+					{
+						std::cerr << "recv: " << std::strerror(errno) << std::endl;
+					}
 				}
 				else if (nbytes == 0)
 				{
@@ -200,10 +207,26 @@ void irc_server::NICK(std::vector<std::string> request, Client &client)
 	{
 		if (nicknames.find(request[0]) == nicknames.end())
 		{
-			client.setNickname(request[0]);
-			std::cout << "Your Nickname is: " << client.getNickname() << std::endl;
-			client.setNicknameSited(true);
-			nicknames.insert(request[0]);
+			if (client.getNickNameSited())
+			{
+				std::set<std::string>::iterator it = nicknames.begin();
+				for (; it != nicknames.end(); ++it){
+					if (nicknames.find(request[0]) == nicknames.end()){
+						nicknames.erase(client.getNickname());
+						nicknames.insert(request[0]);
+						client.setNickname(request[0]);
+						std::cout << "update your nickname to: " << client.getNickname() << std::endl;
+						break;
+					}
+				}
+			}
+			else
+			{
+				client.setNickname(request[0]);
+				std::cout << "Your Nickname is: " << client.getNickname() << std::endl;
+				client.setNicknameSited(true);
+				nicknames.insert(request[0]);
+			}
 		}
 		else
 		{

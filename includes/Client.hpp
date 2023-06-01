@@ -58,6 +58,7 @@ public:
     Client();
     ~Client();
     std::string MessageFormat;
+    std::set<std::string> ClientNicknames;
     // Setters
     void setNicknameSited(bool _Nicknamesited);
     void setUsernameSited(bool _Usernamesited);

@@ -6,7 +6,7 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 12:58:40 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/06/01 18:15:35 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void    irc_server::send_message(int fd, std::string message){
 bool    irc_server::check_param(const char *nickname, Client &client){
     
 	for (size_t i = 0; nickname[i]; i++){
-		if (nickname[i] == ',' || nickname[i] == '*' || nickname[i] == '?' || nickname[i] == '@' || nickname[i] == '.'){
+		if (nickname[i] == ',' || nickname[i] == ' ' || nickname[i] == '*' || nickname[i] == '?' || nickname[i] == '@' || nickname[i] == '.'){
 			send_message(client.getFdNumber(), ERR_ERRONEUSNICKNAME(std::string(nickname), client.getUserName()));
             return (false);
 		}
