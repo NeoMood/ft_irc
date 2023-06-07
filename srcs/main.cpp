@@ -6,11 +6,11 @@
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 16:06:47 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/17 21:56:45 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/05/23 13:38:48 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
+#include "../includes/Server.hpp"
 
 int	main(int argc, char **argv){
 	if (argc == 3){
@@ -29,11 +29,3 @@ int	main(int argc, char **argv){
         }
 	}
 }
-
-// CHANNEL NAME MUST NOT CONTAIN SPACE , CTRL-G, COMMA , 
-
-
-
-
-// WARNING 
-// getting recv: Resource temporarily unavailable !!!!

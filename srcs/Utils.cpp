@@ -1,16 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.cpp                                          :+:      :+:    :+:   */
+/*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/17 21:37:28 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/06/01 18:15:35 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
+#include "../includes/Server.hpp"
+#include "../includes/Client.hpp"
+#include "../includes/Reply.hpp"
 
 void irc_server::check_port(char **argv)
 {
@@ -28,21 +30,29 @@ void    irc_server::send_message(int fd, std::string message){
 
 bool    irc_server::check_param(const char *nickname, Client &client){
     
-	nickname = full_command[1].c_str();
-	char x = nickname[0];
 	for (size_t i = 0; nickname[i]; i++){
-		if (nickname[i] == ',' || nickname[i] == '*' || nickname[i] == '?' || nickname[i] == '@' || nickname[i] == '.'){
-			send_message(client.getfd_number(), ERR_ERRONEUSNICKNAME(std::string(nickname)));
+		if (nickname[i] == ',' || nickname[i] == ' ' || nickname[i] == '*' || nickname[i] == '?' || nickname[i] == '@' || nickname[i] == '.'){
+			send_message(client.getFdNumber(), ERR_ERRONEUSNICKNAME(std::string(nickname), client.getUserName()));
             return (false);
 		}
 		else if (std::strlen(nickname) >= 9){
-			send_message(client.getfd_number(), ERR_ERRONEUSNICKNAME(std::string(nickname)));
-			return (false);
-		}
-		else if (x == '$' || x == ':' || x == '#' || x == '&'){
-			send_message(client.getfd_number(), ERR_ERRONEUSNICKNAME(std::string(nickname)));
+			send_message(client.getFdNumber(), ERR_ERRONEUSNICKNAME(std::string(nickname), client.getUserName()));
 			return (false);
 		}
 	}
 	return (true);
+}
+
+void	irc_server::welcome_message(int fd, std::string message){ 
+	write(fd, message.c_str(), message.length());
+}
+
+void	irc_server::get_date(void){
+	
+	time_t	t;
+	
+	struct tm* date;
+	time(&t);
+	date = localtime(&t);
+	send_message(0, RPL_CREATED(asctime(date)));
 }
