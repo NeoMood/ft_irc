@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 12:58:40 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/06/10 21:04:11 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,4 +55,65 @@ void	irc_server::get_date(void){
 	time(&t);
 	date = localtime(&t);
 	send_message(0, RPL_CREATED(asctime(date)));
+}
+
+bool irc_server::validateValue(std::string value) const {
+	std::size_t i = 0;
+	for (; i < value.length(); i++) {
+		if (value[i] < '0' || value[i] > '9')
+			return false;
+	}
+    return true;
+}
+
+bool irc_server::isLeap(int year) const {
+    return (((year % 4 == 0) && 
+            (year % 100 != 0)) ||
+            (year % 400 == 0));
+}
+  
+
+bool irc_server::validateDate(std::string date, std::string dlm) const {
+    if (!date.length()) {
+        return false;
+    }
+    std::size_t pos = date.find_first_of(dlm);
+    if (pos != std::string::npos) {
+        std::string op = date.substr(0, pos);
+        if (!validateValue(op) || !op.length()) {
+            return false;
+        }
+        int year = std::atoi(op.c_str());
+        date.erase(0, pos + 1);
+        pos = date.find(dlm);
+        if (pos != std::string::npos) {
+            op = date.substr(0, pos);
+            if (!validateValue(op)) {
+                return false;
+            }
+            int m = std::atoi(op.c_str());
+            date.erase(0, pos + 1);
+            if (!validateValue(date)) {
+                return false;
+            }
+            int d = std::atoi(date.c_str());
+            if (m < 1 || m > 12)
+                return false;
+            if (d < 1 || d > 31)
+                return false;
+            if (m == 2) {
+                if (isLeap(year))
+                    return (d <= 29);
+                else
+                    return (d <= 28);
+            }
+            if (m == 4 || m == 6 || m == 9 || m == 11)
+                return (d <= 30);
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+    return true;
 }

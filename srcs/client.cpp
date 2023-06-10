@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.cpp                                         :+:      :+:    :+:   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 13:00:39 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/06/10 00:17:54 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@ Client::Client(): channel_mode(){
     this->PasswordApproved = false;
     this->NicknameSited = false;
     this->UsernameSited = false;
+    this->_channels_count = 0;
+    this->_server_operator = false;
 }
 
 Client::~Client(){
@@ -103,4 +105,31 @@ bool    Client::getUserNameSited(void){
 
 void    Client::setChannelMode(channel_mode_t _mode) {
     channel_mode.push_back(_mode);
+}
+
+void Client::incrementChannelCount() {
+    _channels_count += 1;
+}
+
+int Client::getChannelCount() const {
+    return _channels_count;
+}
+
+void Client::setServerOper(bool isOper) {
+    this->_server_operator = isOper;
+}
+bool Client::isServerOper() const {
+    return this->_server_operator;
+}
+
+void Client::setJoiningTime(time_t time) {
+    this->joining_time = time;
+}
+time_t Client::getJoiningTime() const {
+    return this->joining_time;
+}
+std::string Client::getJoiningTimeAsString() {
+    std::stringstream ss;
+    ss << joining_time;
+    return ss.str();
 }

@@ -36,6 +36,8 @@ class Channel {
         std::map<std::string, Client&>        __invited_users;
         int                         __online_users;
         int                         __users_limit;
+        bool                        support_topic;
+        void buildJoinChannelRes(Client& client);
     public:
         Channel(std::string name, Client& _operator);
         bool isInviteOnly() const;
@@ -48,7 +50,7 @@ class Channel {
         int invite_user(Client& client);
         int remove_user(Client& client);
         int ban_user(Client& client);
-        int add_operator(Client& client);
+        void add_operator(Client& client);
         void remove_operator(Client& client);
         int unban_user(Client& client);
         bool hasUser(std::string nickname);
@@ -59,5 +61,9 @@ class Channel {
         Client getCreator() const;
         int getUserLimit() const;
         int getUsersTotal();
+        void sendToAllUsers(Client& client, std::string message, bool sendToOwner);
+        void setSupportTopic(bool support);
+        bool getSupportTopic() const;
+        std::string getTopic() const;
         ~Channel();
 };

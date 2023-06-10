@@ -26,6 +26,7 @@
 #include <set>
 #include <stdexcept>
 #include <map>
+#include <sstream>
 
 #pragma	once
 
@@ -51,6 +52,9 @@ class Client{
         std::string RealName;
         int FdNumber;
         std::vector<channel_mode_t> channel_mode;
+        int        _channels_count;
+        bool       _server_operator;
+        time_t joining_time;
     public:
         Client();
         ~Client();
@@ -77,5 +81,11 @@ class Client{
         std::string	getUserName(void);
         std::string	getMode(void);
         std::string MessageFormat;
-        
+        void incrementChannelCount();
+        int getChannelCount() const;
+        void setServerOper(bool isOper);
+        bool isServerOper() const;
+        void setJoiningTime(time_t time);
+        time_t getJoiningTime() const;
+        std::string getJoiningTimeAsString();
 };
