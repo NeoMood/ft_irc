@@ -82,6 +82,7 @@ class Client{
         std::string	getMode(void);
         std::string MessageFormat;
         void incrementChannelCount();
+        void decrementChannelCount();
         int getChannelCount() const;
         void setServerOper(bool isOper);
         bool isServerOper() const;

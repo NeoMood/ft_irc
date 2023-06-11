@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 22:53:03 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/11 23:07:35 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -281,6 +281,11 @@ void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request
 	// 	send_message(client.getFdNumber(), msg + ERR_NOTREGISTERED(client.getNickname()));
 	// 	return ;
 	// }
+	if (_request.size() == 1 && _request[0].first == "0") {
+		leaveAllChannels(client);
+		client.decrementChannelCount();
+		return ;
+	}
 	for (size_t i = 0; i < _request.size(); i++) {
 		std::pair<std::string, std::string> pair = _request[i];
 		if (checkChannelMask(pair.first[0]) || pair.first.find(",") != std::string::npos || pair.first.find(" ") != std::string::npos) {
@@ -774,6 +779,7 @@ void irc_server::PART(std::vector<std::string> request, Client& client) {
 				it->sendToAllUsers(client, formatUserMessage(client.getNickname(),
 				client.getUserName(), host) + "PART " + args[i] + " " + message + "\r\n",true);
 				it->remove_user(u->second);
+				client.decrementChannelCount();
 				if (it->isAnOperatorOrOwner(u->second))
 					it->remove_operator(u->second);
 			} else {

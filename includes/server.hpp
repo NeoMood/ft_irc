@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 22:55:57 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/11 23:06:52 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@
 
 #define BUFFER_SIZE 1024
 #define	EXIT_FAILURE 1
-#define MAX_CHANNELS 2
+#define MAX_CHANNELS 20
 #define DATABASE_PATH "./database"
 
 #define E_UNKNOWN -1

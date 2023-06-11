@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/10 00:17:54 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/11 23:06:03 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,11 @@ void    Client::setChannelMode(channel_mode_t _mode) {
 
 void Client::incrementChannelCount() {
     _channels_count += 1;
+}
+
+void Client::decrementChannelCount() {
+    if (_channels_count != 0)
+        _channels_count -= 1;
 }
 
 int Client::getChannelCount() const {
