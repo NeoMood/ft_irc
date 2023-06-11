@@ -60,19 +60,19 @@ int Channel::invite_user(Client& client) {
     return 1;
 }
 
-void Channel::buildJoinChannelRes(Client& client) {
-    std::string message = RPL_TOPIC(client.getHostname(), client.getNickname(), __name);
+void Channel::buildJoinChannelRes(std::string msg, Client& client) {
+    std::string message = msg + RPL_TOPIC(client.getNickname(), __name);
     std::string users = __owner.getNickname() + " ";
     for (std::map<std::string, Client&>::iterator it = __users.begin(); it != __users.end(); it++) {
         users += it->first + " ";
     }
     users = users.substr(0, users.find_last_of(" "));
-    message += RPL_NAMREPLY(client.getHostname(), client.getNickname(), __name, users);
-    message += RPL_ENDOFNAMES(__name);
+    message += msg + RPL_NAMREPLY(client.getNickname(), __name, users);
+    message += msg + RPL_ENDOFNAMES(__name);
     write(client.getFdNumber(), message.c_str(), message.length());
 }
 
-int Channel::join_user(Client& client) {
+int Channel::join_user(std::string msg, std::string host, Client& client) {
     Logger logger = Logger::getLogger();
     bool __has_ben_invited = false;
     logger.log(DEBUG, "Check if the user banned or not");
@@ -90,14 +90,14 @@ int Channel::join_user(Client& client) {
         }
     }
     if (__is_invite_only && !__has_ben_invited) {
-        std::string message = ERR_INVITEONLYCHAN(client.getNickname(), __name);
+        std::string message = msg + ERR_INVITEONLYCHAN(client.getNickname(), __name);
         write (client.getFdNumber(), message.c_str(), message.length());
     }
     if (((__is_invite_only && __has_ben_invited) || !__is_invite_only) && !is_already_join(client) && client.getNickname() != __owner.getNickname()) {
         client.incrementChannelCount();
         this->__users.insert(std::pair<std::string, Client&>(client.getNickname(), client));
-        sendToAllUsers(client, RPL_CHANNEL(client.getNickname(), client.getUserName(), client.getHostname(), __name), true);
-        buildJoinChannelRes(client);
+        sendToAllUsers(client, RPL_CHANNEL(client.getNickname(), client.getUserName(), host, __name), true);
+        buildJoinChannelRes(msg, client);
         __online_users++;
     }
     logger.log(DEBUG, "size of __users is " + std::to_string(__users.size()));

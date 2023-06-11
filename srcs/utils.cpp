@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/10 21:04:11 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/11 22:15:19 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,11 @@ bool    irc_server::check_param(const char *nickname, Client &client){
     
 	for (size_t i = 0; nickname[i]; i++){
 		if (nickname[i] == ',' || nickname[i] == '*' || nickname[i] == '?' || nickname[i] == '@' || nickname[i] == '.'){
-			send_message(client.getFdNumber(), ERR_ERRONEUSNICKNAME(std::string(nickname), client.getUserName()));
+			send_message(client.getFdNumber(), ERR_ERRONEUSNICKNAME(std::string(nickname), client.getUserName(), host));
             return (false);
 		}
 		else if (std::strlen(nickname) >= 9){
-			send_message(client.getFdNumber(), ERR_ERRONEUSNICKNAME(std::string(nickname), client.getUserName()));
+			send_message(client.getFdNumber(), ERR_ERRONEUSNICKNAME(std::string(nickname), client.getUserName(), host));
 			return (false);
 		}
 	}
@@ -116,4 +116,15 @@ bool irc_server::validateDate(std::string date, std::string dlm) const {
         return false;
     }
     return true;
+}
+
+bool irc_server::isDir(const char* path) {
+    struct stat stats;
+    stat(path, &stats);
+    return S_ISDIR(stats.st_mode);
+}
+bool irc_server::isFile(const char* path) {
+    struct stat stats;
+    stat(path, &stats);
+    return S_ISREG(stats.st_mode);
 }

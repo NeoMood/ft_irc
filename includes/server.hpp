@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/10 21:13:48 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/11 22:55:57 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
+#include <unistd.h>
+#include <sys/stat.h>
 #include "Client.hpp"
 #include "Logger.hpp"
 #include "Channel.hpp"
@@ -52,6 +54,8 @@
 
 class irc_server{
 	private:
+		std::string host;
+		std::string msg;
 		int	socket_fd;
 		int	portno;
 		std::string	passwd;
@@ -64,6 +68,8 @@ class irc_server{
 		Bot& spotnuts;
 		std::string server_pass;
 		std::map<std::string, File> _files;
+		bool isDir(const char* path);
+		bool isFile(const char* path);
 		bool checkChannelMask(char c);
 		std::vector<std::pair<int, Arg> > checkAction(std::string mode);
 		bool checkMode(char c);
@@ -72,6 +78,7 @@ class irc_server{
 		bool isLeap(int year) const;
 		bool validateDate(std::string date, std::string dlm) const;
 		bool validateValue(std::string value) const;
+		void leaveAllChannels(Client& client);
     public:
 		class ChannelNotFound: public std::exception {
 			public:
@@ -123,9 +130,10 @@ class irc_server{
 		void	OPER(std::vector<std::string> request, Client& client); // -> DONE
 		void	WALLOPS(std::vector<std::string> request, Client& client); // -> DONE
 		void	WHOIS(std::vector<std::string> request, Client& client); // -> DONE
-		void	SENDFILE(std::vector<std::string> request, Client& client); // -> Nearly done
-		void	GETFILE(std::vector<std::string> request, Client& client); // -> Nearly done
-		void	BOT(std::vector<std::string> request, Client& client); // in progress
+		void	SENDFILE(std::vector<std::string> request, Client& client); // -> done
+		void	GETFILE(std::vector<std::string> request, Client& client); // -> done
+		void	LISTFILE(std::vector<std::string> request, Client& client); // -> done
+		void	BOT(std::vector<std::string> request, Client& client); // DONE
 		// ========================================================================
 		std::vector<Channel>::iterator findChannelByName(std::string channel);
 		std::map<int, Client>::iterator findClient(std::string nickname);

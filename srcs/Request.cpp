@@ -93,11 +93,11 @@ void Request::parseRequest(std::string& line) {
 		line.erase(0, pos + delim.length());
 		if (this->_cmd == "PASS" || this->_cmd == "NICK"
 			|| this->_cmd == "OPER" || this->_cmd == "WALLOPS"
-			|| this->_cmd == "WHOIS" || this->_cmd == "SPOT.NUTS")
+			|| this->_cmd == "WHOIS" || this->_cmd == "SPOT.NUTS"
+			|| this->_cmd == "SENDFILE" || this->_cmd == "GETFILE" || this->_cmd == "LISTFILE")
 			request.push_back(line.substr(0, line.length()));
 		else if (this->_cmd == "USER" || this->_cmd == "PRIVMSG"
-			|| this->_cmd == "TOPIC" || this->_cmd == "SENDFILE"
-			|| this->_cmd == "GETFILE" || this->_cmd == "PART"
+			|| this->_cmd == "TOPIC" || this->_cmd == "PART"
 			|| this->_cmd == "QUIT" || this->_cmd == "NOTICE"){
 			this->request = _split(line, delim);
 			join_strings(this->request);
