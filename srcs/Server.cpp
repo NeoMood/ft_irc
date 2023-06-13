@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/13 15:55:19 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/13 16:13:18 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,6 +191,7 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 
 void	irc_server::TOPIC(std::vector<std::string> request, Client& client)
 {
+	(void) client;
 	logger.log(DEBUG, "TOPIC");
 	std::vector<Channel>::iterator it = findChannelByName(request[0]);
 	std::cout << "request[0] = " << request[0] << "   " <<  "request[1] = " << request[1] << std::endl;
@@ -679,18 +680,18 @@ void print_usermode(std::__1::vector<user_mode_t> modelist, Client client)
 				if(client.get_wallops() == true)
 				std::cout << "- Receiving wallops" << std::endl;
 				break;
-			// case 2:
-			// 	std::cout << "- Operator" << std::endl;
-			// 	break;
-			// case 3:
-			// 	std::cout << "- Secure connection" << std::endl;
-			// 	break;
-			// case 4:
-			// 	std::cout << "- Cloaking" << std::endl;
-			// 	break; 
-			// case 5:
-			// 	std::cout << "- Deaf" << std::endl; 
-			// 	break;
+			case 2:
+				std::cout << "- Operator" << std::endl;
+				break;
+			case 3:
+				std::cout << "- Secure connection" << std::endl;
+				break;
+			case 4:
+				std::cout << "- Cloaking" << std::endl;
+				break; 
+			case 5:
+				std::cout << "- Deaf" << std::endl; 
+				break;
 		}
 	}
 }
