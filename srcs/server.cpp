@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
+/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 23:07:35 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/13 17:39:33 by yamzil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1126,7 +1126,7 @@ std::string irc_server::formatUserMessage(std::string nickname, std::string user
 }
 
 bool irc_server::checkMode(char c) {
-	return (c != 'k' && c != 'i' && c != 'l' && c != 'o');
+	return (c != 'k' && c != 'i' && c != 'l' && c != 'o' && c != 't');
 }
 
 std::vector<std::pair<int, Arg> > irc_server::checkAction(std::string mode) {

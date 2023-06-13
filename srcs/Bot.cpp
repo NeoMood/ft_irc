@@ -34,12 +34,12 @@ int Bot::prelogin() {
     } else {
         std::string param = "curl -Ss -X POST --data \"grant_type=client_credentials&client_id=" + cliend_id + "&client_secret=" + secret_id + "\" https://api.intra.42.fr/oauth/token > ./login.json";
         std::system(param.c_str());
-        in = std::ifstream("./login.json");
-        if (in.is_open()) {
+        std::ifstream is("./login.json");
+        if (is.is_open()) {
             std::string line;
-            std::getline(in, line, '\0');
+            std::getline(is, line, '\0');
             ret = parseToken(line);
-            in.close();
+            is.close();
         }
     }
     return ret;
