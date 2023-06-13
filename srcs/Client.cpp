@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/13 15:42:49 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/13 17:14:59 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,19 @@ int Client::getFdNumber(void){
 
 std::string Client::getHostname(void){
     return (this->hostname);
+}
+
+void Client::decrementChannelCount() {
+    if (_channels_count != 0)
+        _channels_count -= 1;
+}
+
+int Client::getChannelCount() const {
+    return _channels_count;
+}
+
+void Client::incrementChannelCount() {
+    _channels_count += 1;
 }
 
 std::string Client::getRealName(void){

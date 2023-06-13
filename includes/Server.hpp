@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/12 18:14:46 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/13 17:30:02 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@
 
 #define BUFFER_SIZE 1024
 #define	EXIT_FAILURE 1
+#define MAX_CHANNELS 20
 
 #pragma	once
 
@@ -49,6 +50,8 @@ class irc_server{
 	private:
 		int	socket_fd;
 		int	portno;
+		std::string msg;
+		std::string host;
 		std::string	passwd;
 		int	accept_fd;
 		int	poll_fds;
@@ -58,6 +61,7 @@ class irc_server{
 		std::string server_pass;
 		bool checkChannelMask(char c);
 		e_action checkAction(std::string mode);
+		void leaveAllChannels(Client& client);
     public:
 		class ChannelNotFound: public std::exception {
 			public:

@@ -68,6 +68,7 @@ private:
     int FdNumber;
     std::vector<channel_mode_t> channel_mode;
     std::vector<user_mode_t> user_mode;
+    int        _channels_count;
 
 public:
     Client();
@@ -103,4 +104,7 @@ public:
     bool get_invisible(void);
     bool get_wallops(void);
     std::vector<user_mode_t> get_user_mode(void);
+    void decrementChannelCount();
+    int getChannelCount() const;
+    void incrementChannelCount();
 };

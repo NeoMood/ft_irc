@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/13 16:13:18 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/13 17:33:54 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -332,28 +332,25 @@ void	irc_server::INVITE(std::vector<std::string> request, Client& client)
 
 void irc_server::PASS(std::vector<std::string> request, Client &client)
 {
-	if (!request.size())
-	{
-		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "PASS", client.getUserName()));
+	if (!request.size()){
+		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(std::string("PASS"), client.getNickname()));
 		return;
 	}
-	else if (request[0] != this->passwd)
-	{
+	else if (request[0] != this->passwd){
 		send_message(client.getFdNumber(), ERR_PASSWDMISMATCH(client.getNickname(), client.getUserName()));
 		return;
 	}
-	else if (request[0] == this->passwd && !client.getPasswordApproved())
-	{
+	else if (request[0] == this->passwd && !client.getPasswordApproved()){
 		std::cout << "Password approved, you can set a nickname" << std::endl;
 		client.setPasswordApproved(true);
-		return;
+		return ;
 	}
-	else if (client.getPasswordApproved() == true)
-	{
+	else if (client.getPasswordApproved() == true){
 		send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName()));
-		return;
+		return ;
 	}
 }
+
 
 void irc_server::NICK(std::vector<std::string> request, Client &client)
 {
@@ -397,7 +394,8 @@ void irc_server::USER(std::vector<std::string> request, Client &client)
 {
 
 	if (request.size() != 4)
-		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "USER", client.getUserName()));
+		// send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "USER", client.getUserName()));
+		puts("needs fix");
 	else
 	{
 		if (client.getPasswordApproved() && client.getNickNameSited())
@@ -473,45 +471,71 @@ void	irc_server::NAMES(std::vector<std::string> request, Client& client)
 	// std::cout << "Size: " << request.size() << std::endl;
 }
 
+void irc_server::leaveAllChannels(Client& client) {
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++) {
+		if (it->hasUser(client.getNickname())) {
+			if (it->isAnOperatorOrOwner(client))
+				it->remove_operator(client);
+			it->remove_user(client);
+		}
+	}
+}
+
 void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client) {
-	std::cout << "Size: " << _request.size() << std::endl;
+	//   Numeric Replies:
+
+    //        ERR_NEEDMOREPARAMS: [D]              ERR_BANNEDFROMCHAN: [D]
+    //        ERR_INVITEONLYCHAN: [D]              ERR_BADCHANNELKEY: [D]
+    //        ERR_CHANNELISFULL: [D]               ERR_BADCHANMASK: [D]
+    //        ERR_NOSUCHCHANNEL: [N]               ERR_TOOMANYCHANNELS: [D]
+    //        ERR_TOOMANYTARGETS: [N]              ERR_UNAVAILRESOURCE: [N]
+    //        RPL_TOPIC: [D]
+	if (_request.empty()) {
+		send_message(client.getFdNumber(), msg + ERR_NEEDMOREPARAMS(std::string("JOIN"), client.getNickname()));
+		return ;
+	}
+	// if (!client.getUserName().length()) {
+	// 	send_message(client.getFdNumber(), msg + ERR_NOTREGISTERED(client.getNickname()));
+	// 	return ;
+	// }
+	if (_request.size() == 1 && _request[0].first == "0") {
+		leaveAllChannels(client);
+		client.decrementChannelCount();
+		return ;
+	}
 	for (size_t i = 0; i < _request.size(); i++) {
 		std::pair<std::string, std::string> pair = _request[i];
-		std::cout << "Channel name: " << pair.first << " key: " << pair.second << std::endl;
-		if (!client.getUserName().length()) {
-			send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
-			return ;
-		}
 		if (checkChannelMask(pair.first[0]) || pair.first.find(",") != std::string::npos || pair.first.find(" ") != std::string::npos) {
-			send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), pair.first));
+			send_message(client.getFdNumber(), msg + ERR_BADCHANMASK(client.getNickname(), pair.first));
 		} else {
 			std::vector<Channel>::iterator it = findChannelByName(pair.first);
-
 			if (it != channels.end()) {
+				if (client.getChannelCount() >= MAX_CHANNELS) {
+					send_message(client.getFdNumber(), msg + ERR_TOOMANYCHANNELS(client.getNickname(), pair.first));
+					return ;
+				}
 				logger.log(DEBUG, "User request to join channel: |" + pair.first + "|");
 				if (!it->is_already_join(client) &&  it->getUserLimit() != -1 && it->getUsersTotal() >= it->getUserLimit()) {
-					send_message(client.getFdNumber(), "Error we have reach channel limit\n");
+					send_message(client.getFdNumber(), msg + ERR_CHANNELISFULL(client.getNickname(), pair.first));
 					return ;
-				
+				}
 				if (it->hasKey()) {
-					// provide the key
 					logger.log(DEBUG, "channel has a key");
 					if (!it->getChannelKey().compare(0, it->getChannelKey().length(), pair.second)) {
 						logger.log(DEBUG, "Channel key is correct");
-						if (!it->join_user(client)) {
-							send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), pair.first));
+						if (!it->join_user(msg, host, client)) {
+							send_message(client.getFdNumber(), msg + ERR_BANNEDFROMCHAN(client.getNickname(), pair.first));
 							return ;
 						}
 					} else {
 						logger.log(DEBUG, "channel key is not valid");
-						std::string msg = "Need a key to unlock the channel";
-						send_message(client.getFdNumber(), ERR_BADCHANNELKEY(msg));
+						send_message(client.getFdNumber(), msg + ERR_BADCHANNELKEY(client.getNickname(), pair.first));
 						return ;
 					}
 				} else {
 					logger.log(DEBUG, "channel has no key hh");
-					if (!it->join_user(client)) {
-						send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), pair.first));
+					if (!it->join_user(msg, host, client)) {
+						send_message(client.getFdNumber(), msg + ERR_BANNEDFROMCHAN(client.getNickname(), pair.first));
 						return ;
 					}
 				}
@@ -519,11 +543,8 @@ void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request
 				logger.log(DEBUG, "Channel: " + pair.first + " Not found, will create one");
 				channels.push_back(Channel(pair.first, client));
 			}
-			it = findChannelByName(pair.first);
-			logger.log(DEBUG, "channel " + pair.first + " has "+ std::to_string(it->getUsers().size()) + " members");
 		}
 	}
-}
 }
 
 // void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client)

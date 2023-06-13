@@ -36,6 +36,7 @@ class Channel {
         std::map<std::string, Client&>        __invited_users;
         int                         __online_users;
         int                         __users_limit;
+        void buildJoinChannelRes(std::string msg, Client& client);
     public:
         Channel(std::string name, Client& _operator);
         bool isInviteOnly() const;
@@ -45,7 +46,7 @@ class Channel {
         void setChannelLimit(int lmt);
         bool is_already_join(Client& client);
         bool isAnOperatorOrOwner(Client& clinet);
-        int join_user(Client& client);
+        int join_user(std::string msg, std::string host, Client& client);
         int invite_user(Client& client);
         int remove_user(Client& client);
         int ban_user(Client& client);
@@ -54,6 +55,7 @@ class Channel {
         int unban_user(Client& client);
         bool hasUser(std::string nickname);
         std::map<std::string, Client&>  getUsers();
+        void sendToAllUsers(Client& client, std::string message, bool sendToOwner);
         std::string getChannelName() const;
         std::string getChannelKey() const;
         bool hasKey() const;
