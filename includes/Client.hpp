@@ -39,12 +39,26 @@ typedef enum
 
 } channel_mode_t;
 
+typedef enum
+{
+    u_i = 0, //Invisible
+    u_w = 1, //Receiving wallops
+    u_o = 2, //Operator
+    u_s = 3, //Secure connection
+    u_x = 4, //Cloaking disguises the user's actual IP address, replacing it with a generic or obfuscated address
+    u_D = 5, //allows the user to ignore all channel messages while still being connected to the channel
+
+} user_mode_t;
+
 class Client
 {
 private:
     bool PasswordApproved;
     bool NicknameSited;
     bool UsernameSited;
+    bool disguised;
+    bool invisible;
+    bool wallops;
     std::string Nickname;
     std::string IPAddress;
     std::string UserName;
@@ -53,6 +67,7 @@ private:
     std::string RealName;
     int FdNumber;
     std::vector<channel_mode_t> channel_mode;
+    std::vector<user_mode_t> user_mode;
 
 public:
     Client();
@@ -71,6 +86,10 @@ public:
     void setMode(std::string _mode);
     void setNickname(std::string Nickname);
     void setChannelMode(channel_mode_t _mode);
+    void setUserMode(user_mode_t _mode);
+    void set_disguised(bool disguised);
+    void set_invisible(bool invisible);
+    void set_wallops(bool wallops);
     // Getters
     bool getNickNameSited(void);
     bool getUserNameSited(void);
@@ -81,4 +100,7 @@ public:
     std::string getRealName(void);
     std::string getUserName(void);
     std::string getMode(void);
+    bool get_invisible(void);
+    bool get_wallops(void);
+    std::vector<user_mode_t> get_user_mode(void);
 };

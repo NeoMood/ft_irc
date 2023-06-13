@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/06 23:37:48 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/13 15:55:19 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,10 +163,19 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 							JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
 						// else if (!object.getcmd().compare(0, object.getcmd().length(), "PRIVMSG"))
 						// 	PRIVMSG(object.getRequest(), guest[vec_fd[i].fd]);
-						// else if (!object.getcmd().compare(0, object.getcmd().length(), "INVITE"))
-						// 	INVITE(object.getRequest(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "INVITE"))
+							INVITE(object.getRequest(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "TOPIC"))
+							TOPIC(object.getRequest(), guest[vec_fd[i].fd]);
 						// else if (!object.getcmd().compare(0, object.getcmd().length(), "TOPIC"))
 						// 	TOPIC(object.getRequest(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "NAMES"))
+						{
+							// std::cout << "getcmd "<<  object.getcmd()<<"\n";
+							// std::cout << "compare(0, object.getcmd().length(), 'NAMES') "<<  object.getcmd().compare(0, object.getcmd().length(), "NAMES")<<"\n";
+							// puts("HRERERERE");
+							NAMES(object.getRequest(), guest[vec_fd[i].fd]);;
+						}
 						else if (!object.getcmd().compare(0, object.getcmd().length(), "MODE"))
 							MODE(object.getRequest(), guest[vec_fd[i].fd]);
 						_message = guest.at(vec_fd[i].fd).MessageFormat.erase(0, pos + 2);
@@ -179,6 +188,146 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 }
 
 //// COMMANDS
+
+void	irc_server::TOPIC(std::vector<std::string> request, Client& client)
+{
+	logger.log(DEBUG, "TOPIC");
+	std::vector<Channel>::iterator it = findChannelByName(request[0]);
+	std::cout << "request[0] = " << request[0] << "   " <<  "request[1] = " << request[1] << std::endl;
+	
+	if(it != channels.end())
+	{
+		logger.log(DEBUG, "Channel Found ... setting topic!");
+		it->setChannelTopic(request[1]);
+	}
+	else
+	{
+		logger.log(DEBUG, "Channel Not found");
+		return ;
+	}
+}
+
+bool irc_server::checkChannelMask(char c) {
+	return (c != '#' && c != '!' && c != '+' && c != '&');
+}
+
+e_action irc_server::checkAction(std::string mode) {
+	return mode[0] == '+' ? ADD : mode[0] == '-' ? REMOVE : UNKOWN;
+}
+
+std::map<int, Client>::iterator irc_server::findClient(std::string nickname) {
+	std::map<int, Client>::iterator it = guest.begin();
+	for (; it != guest.end(); it++) {
+		if (it->second.getNickname() == nickname) {
+			return it;
+		}
+	}
+	return guest.end();
+}
+
+
+bool irc_server::isoperator(std::map<std::string, Client&> operators, int userFd)
+{
+	std::map<std::string, Client&>::iterator it = operators.begin();
+	for (; it != operators.end(); it++) {
+		if (it->second.getFdNumber() == userFd) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void	irc_server::INVITE(std::vector<std::string> request, Client& client) 
+{	
+	logger.log(DEBUG, "INVITE");
+	std::vector<Channel>::iterator it = findChannelByName(request[1]);
+	// std::cout << "request[1] = " << request[1] << "   " << channels.begin()->getChannelName() << std::endl;
+	
+	if(it != channels.end())
+	{
+		logger.log(DEBUG, "Found a channel!");
+		if(it->isInviteOnly())
+		{
+			logger.log(DEBUG, "This channel is Invite Only");
+			if(isoperator(it->getOperators(), client.getFdNumber()))
+			{
+				logger.log(DEBUG, "You're an Operator! You can Proceed ...");
+				std::map<int, Client>::iterator it2 = findClient(request[0]);
+				it->invite_user(it2->second);
+				if (it2 != guest.end()) {
+					if (it2->first != client.getFdNumber())
+						it->invite_user(it2->second);
+					else
+						send_message(client.getFdNumber(), "You can't invite yourself\n");
+				}
+				// else
+				// 	send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
+			}
+			else {
+				logger.log(DEBUG, "You do not have permission to use INVITE command");
+				return ;
+			}
+			
+		}
+		else if (it->is_already_join_2(request[1]))
+		{
+			send_message(client.getFdNumber(), "User is already a member of this channel\n");
+			return ;
+		}
+		else if (!it->is_already_join_2(request[1]) && it->getUserLimit() != -1 && it->getUsersTotal() >= it->getUserLimit()) 
+		{
+			send_message(client.getFdNumber(), "Error we have reach channel limit\n");
+			return ;
+		}
+	}	
+	else
+	{
+		logger.log(DEBUG, "Cannot find existing channel, creating one ...");
+		// std::pair<std::string, std::string> pair = request[i];
+		// std::cout << "Channel name: " << pair.first << " key: " << pair.second << std::endl;
+		if (!client.getUserName().length()) {
+			send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
+			return ;
+		}
+		if (checkChannelMask(request[1][0])) {
+			send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), request[1]));
+		} else {
+			channels.push_back(Channel(request[1], client));
+			std::map<int, Client>::iterator cl = findClient(request[0]);
+			channels.end()->invite_user(cl->second);
+		}
+	}
+	
+}	
+
+
+
+// void	irc_server::INVITE(std::vector<std::string> request, Client& client) {
+// 	logger.log(DEBUG, "invite command");
+// 	std::vector<Channel>::iterator it = findChannelByName(request[0]);
+// 	if (it != channels.end()) {
+// 		logger.log(DEBUG, "Channel found " + request[0]);
+// 		if (it->isAnOperatorOrOwner(client)) {
+// 			std::map<int, Client>::iterator u = findClient(request[1]);
+// 			if (u != guest.end()) {
+// 				if (u->first != client.getFdNumber()) {
+// 					it->invite_user(u->second);
+// 				} else {
+// 					send_message(client.getFdNumber(), "Can not invite your self\n");
+// 				}
+// 			} else {
+// 				send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
+// 			}
+// 		} else {
+// 			logger.log(DEBUG, "Action can not be permited");
+// 			return ;
+// 		}
+// 	} else {
+// 		logger.log(DEBUG, "Channel not found");
+// 		return ;
+// 	}
+// }
+
 
 void irc_server::PASS(std::vector<std::string> request, Client &client)
 {
@@ -269,89 +418,419 @@ void irc_server::USER(std::vector<std::string> request, Client &client)
 	}
 }
 
-void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client)
+void	irc_server::NAMES(std::vector<std::string> request, Client& client)
 {
-
-	std::vector<std::pair<std::string, std::string> >::iterator it;
-	for (it = _request.begin(); it != _request.end(); ++it) {
-		std::cout << "First element: " << it->first << std::endl;
-		std::cout << "Second element: " << it->second << std::endl;
+	std::cout << "Size: " << request.size() << std::endl;
+	// (void) request;
+	(void) client;
+	logger.log(DEBUG, "names command");
+	// std::vector<std::pair<std::string, std::string> >::iterator it;
+	// for (size_t i = 0; i < request.size(); i++) {
+	// 	std::pair<std::string, std::string> pair = request[i];
+	// 	std::cout << "Channel name: " << pair.first << " key: " << pair.second << std::endl;
+	// }
+	std::cout << "Request size: " << request.size() << std::endl;
+	if(!request.size())
+	{
+		logger.log(DEBUG, "Listing channels");
+		std::vector<Channel>::iterator it1;
+		for(it1 = channels.begin(); it1 != channels.end(); ++it1)
+		{
+			std::cout << it1->getChannelName() << std::endl;
+			std::map<std::string, Client&>::iterator it2;
+			puts("HRERE");
+			for (it2 = it1->getUsers().begin(); it2 != it1->getUsers().end(); ++it2)
+			{
+				// Print the keys
+				// std::cout << "Key: " << ch->first << std::endl;
+				
+				std::cout << "    " << it2->second.getNickname() << std::endl;
+			}
+		}
 	}
+	else
+	{		
+		if (request[0][0] == '#' || request[0][0] == '+' || request[0][0] == '!' || request[0][0] == '&') {
+			// CHANNEL MODE
+			logger.log(DEBUG, "Searching for a channel");
+			std::vector<Channel>::iterator it = findChannelByName(request[0]);
+			if (it != channels.end()) {
+				// logger.log(DEBUG, "channel found!");
+				std::cout << "Channel name:" << it->getChannelName() << std::endl;
+				std::map<std::string, Client&>::iterator ch;
+				std::cout << "Users: " << std::endl;
+				for (ch = it->getUsers().begin(); ch != it->getUsers().end(); ++ch) {
+					// Print the keys
+					// std::cout << "Key: " << ch->first << std::endl;
 
-	std::cout << "Client: " << client.getUserName() << std::endl;
-	if (_request.empty()) {
-		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN", client.getUserName()));
-		return;
+					std::cout << "-" << ch->second.getNickname() << std::endl;
+				}
+
+			}
+		}
 	}
-	else {
-		for (it = _request.begin(); it != _request.end(); ++it) {
-			if (client.getUserName().empty()) {
-				send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
-				return;
-			}
+	// std::cout << "Size: " << request.size() << std::endl;
+}
 
-			if ((it->first[0] != '&' && it->first[0] != '#' && it->first[0] != '+' && it->first[0] != '!')
-				|| (it->first.find(",") != std::string::npos)) {
-				send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), it->first));
-				return;
-			}
+void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client) {
+	std::cout << "Size: " << _request.size() << std::endl;
+	for (size_t i = 0; i < _request.size(); i++) {
+		std::pair<std::string, std::string> pair = _request[i];
+		std::cout << "Channel name: " << pair.first << " key: " << pair.second << std::endl;
+		if (!client.getUserName().length()) {
+			send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
+			return ;
+		}
+		if (checkChannelMask(pair.first[0]) || pair.first.find(",") != std::string::npos || pair.first.find(" ") != std::string::npos) {
+			send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), pair.first));
+		} else {
+			std::vector<Channel>::iterator it = findChannelByName(pair.first);
 
-			if (channels.empty()) {
-				logger.log(DEBUG, client.getNickname());
-				channels.push_back(Channel(it->first, client));
-			}
-			else {
-				std::vector<Channel>::iterator it2 = findChannelByName(it->first);
-				if (it2 != channels.end()) {
-					logger.log(DEBUG, "User request to join this channel");
-					// if (!it2->join_user(client)) {
-					// 	send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), it2));
-					// 	return;
-					// }
+			if (it != channels.end()) {
+				logger.log(DEBUG, "User request to join channel: |" + pair.first + "|");
+				if (!it->is_already_join(client) &&  it->getUserLimit() != -1 && it->getUsersTotal() >= it->getUserLimit()) {
+					send_message(client.getFdNumber(), "Error we have reach channel limit\n");
+					return ;
+				
+				if (it->hasKey()) {
+					// provide the key
+					logger.log(DEBUG, "channel has a key");
+					if (!it->getChannelKey().compare(0, it->getChannelKey().length(), pair.second)) {
+						logger.log(DEBUG, "Channel key is correct");
+						if (!it->join_user(client)) {
+							send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), pair.first));
+							return ;
+						}
+					} else {
+						logger.log(DEBUG, "channel key is not valid");
+						std::string msg = "Need a key to unlock the channel";
+						send_message(client.getFdNumber(), ERR_BADCHANNELKEY(msg));
+						return ;
+					}
+				} else {
+					logger.log(DEBUG, "channel has no key hh");
+					if (!it->join_user(client)) {
+						send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), pair.first));
+						return ;
+					}
 				}
-				else {
-					channels.push_back(Channel(it->first, client));
-				}
-				it2 = findChannelByName(it->first);
-				logger.log(DEBUG, "channel " + it->first + " has " + std::to_string(it2->getUsers().size()) + " members");
+			} else {
+				logger.log(DEBUG, "Channel: " + pair.first + " Not found, will create one");
+				channels.push_back(Channel(pair.first, client));
 			}
+			it = findChannelByName(pair.first);
+			logger.log(DEBUG, "channel " + pair.first + " has "+ std::to_string(it->getUsers().size()) + " members");
+		}
+	}
+}
+}
+
+// void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client)
+// {
+
+// 	std::vector<std::pair<std::string, std::string> >::iterator it;
+// 	for (it = _request.begin(); it != _request.end(); ++it) {
+// 		std::cout << "First element: " << it->first << std::endl;
+// 		std::cout << "Second element: " << it->second << std::endl;
+// 	}
+
+// 	std::cout << "Client: " << client.getUserName() << std::endl;
+// 	if (_request.empty()) {
+// 		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN", client.getUserName()));
+// 		return;
+// 	}
+// 	else {
+// 		for (it = _request.begin(); it != _request.end(); ++it) {
+// 			if (client.getUserName().empty()) {
+// 				send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
+// 				return;
+// 			}
+
+// 			if ((it->first[0] != '&' && it->first[0] != '#' && it->first[0] != '+' && it->first[0] != '!')
+// 				|| (it->first.find(",") != std::string::npos)) {
+// 				send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), it->first));
+// 				return;
+// 			}
+
+// 			if (channels.empty()) {
+// 				logger.log(DEBUG, client.getNickname());
+// 				channels.push_back(Channel(it->first, client));
+// 			}
+// 			else {
+// 				std::vector<Channel>::iterator it2 = findChannelByName(it->first);
+// 				if (it2 != channels.end()) {
+// 					logger.log(DEBUG, "User request to join this channel");
+// 					// if (!it2->join_user(client)) {
+// 					// 	send_message(client.getFdNumber(), ERR_BANNEDFROMCHAN(client.getNickname(), it2));
+// 					// 	return;
+// 					// }
+// 				}
+// 				else {
+// 					channels.push_back(Channel(it->first, client));
+// 				}
+// 				it2 = findChannelByName(it->first);
+// 				logger.log(DEBUG, "channel " + it->first + " has " + std::to_string(it2->getUsers().size()) + " members");
+// 			}
+// 		}
+// 	}
+// }
+
+
+bool searchInSet(std::set<std::string>& myset, std::string& target) 
+{
+    std::set<std::string>::const_iterator it = std::find(myset.begin(), myset.end(), target);
+
+    if (it != myset.end()) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool searchInSet2(std::set<std::string>& myset, const std::string& target) {
+    std::set<std::string>::const_iterator it = std::find(myset.begin(), myset.end(), target);
+
+    if (it != myset.end()) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool serachInChannels(std::vector<Channel> channels, const std::string& target)
+{
+	std::vector<Channel>::const_iterator it;
+
+	for(it = channels.begin(); it != channels.end(); ++it)
+	{
+		if(it->getChannelName() == target){
+        	return true;
+    	}	
+	}
+    return false;
+}
+
+// void	irc_server::MODE(std::vector<std::string> request, Client& client) {
+// 	(void) client;
+// 	// logger.log(INFO, "mode command");
+	
+// 	// std::vector<std::string>::iterator it;
+// 	// for (it = request.begin(); it != request.end(); ++it) {
+// 	// 	std::cout << "First element: " << it << std::endl;
+// 	// 	std::cout << "Second element: " << it << std::endl;
+// 	// }
+	
+// 	// std::cout << request.size() << std::endl;
+// 	// if (request.empty())
+// 	// {
+// 	// 	send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname(), client.getUserName()));
+// 	// 	return;
+// 	// }
+	
+// 	if (request.size() == 1)
+// 	{
+// 		std::cout << "___" << request[0] << std::endl;
+// 		// if(searchInSet(nicknames, request[0]))
+// 		// {
+// 		// 	std::cout << "___" << "It's a User Nickname" << std::endl;
+// 		// }
+// 		if()
+// 		else if(serachInChannels(channels, request[0]))
+// 			std::cout << "___" << "It's a channel" << std::endl;
+// 		else
+// 			std::cout << "___" << "Can't find what you're looking for" << std::endl;
+// 	}
+	
+// 	if (request.size() > 1)
+// 	{
+// 		//parsing
+// 		std::cout << request.size() << std::endl;
+// 	}
+// 	else
+// 	{
+// 		logger.log(ERROR, "Not enough MODE arguments");
+// 	}
+	
+// 	for(std::vector<int>::size_type i = 0 ; i < request.size(); i++)
+// 	{
+// 		std::cout << "element " << i << ": "<< request[i] << std::endl;
+// 	}
+	
+	
+// }
+
+void print_usermode(std::__1::vector<user_mode_t> modelist, Client client)
+{
+	std::cout << "This user's current modes: " << std::endl;
+	
+	// if(client.get_invisible() == true)
+	// 	std::cout << "- Invisible" << std::endl;
+	// if(client.get_wallops() == true)
+	// 	std::cout << "- Receiving wallops" << std::endl;
+	for (size_t i = 0; i < modelist.size(); ++i)
+	{
+		switch (modelist[i])
+		{
+			case 0:
+				if(client.get_invisible() == true)
+					std::cout << "- Invisible" << std::endl;
+				break;
+			case 1:
+				if(client.get_wallops() == true)
+				std::cout << "- Receiving wallops" << std::endl;
+				break;
+			// case 2:
+			// 	std::cout << "- Operator" << std::endl;
+			// 	break;
+			// case 3:
+			// 	std::cout << "- Secure connection" << std::endl;
+			// 	break;
+			// case 4:
+			// 	std::cout << "- Cloaking" << std::endl;
+			// 	break; 
+			// case 5:
+			// 	std::cout << "- Deaf" << std::endl; 
+			// 	break;
 		}
 	}
 }
 
-
 void	irc_server::MODE(std::vector<std::string> request, Client& client) {
-	(void) client;
-	// logger.log(INFO, "mode command");
-	
-	// std::vector<std::string>::iterator it;
-	// for (it = request.begin(); it != request.end(); ++it) {
-	// 	std::cout << "First element: " << it << std::endl;
-	// 	std::cout << "Second element: " << it << std::endl;
-	// }
-	std::cout << request.size() << std::endl;
-	if (request.empty())
-	{
-		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname(), client.getUserName()));
-		return;
+	logger.log(DEBUG, "mode command");
+		// channel mode
+		// . i: Set/remove Invite-only channel
+		// · t: Set/remove the restrictions of the TOPIC command to channel
+		// operators
+		// · k: Set/remove the channel key (password)
+		// · o: Give/take channel operator privilege
+		// . l: Set/remove the user limit to channel
+	if (request[0][0] == '#' || request[0][0] == '+' || request[0][0] == '!' || request[0][0] == '&') {
+		// CHANNEL MODE
+		logger.log(DEBUG, "Basic implementation of mode operations on channels");
+		std::vector<Channel>::iterator it = findChannelByName(request[0]);
+		if (it != channels.end()) {
+		// 	Numeric Replies:
+
+        //    ERR_NEEDMOREPARAMS              ERR_KEYSET
+        //    ERR_NOCHANMODES                 ERR_CHANOPRIVSNEEDED
+        //    ERR_USERNOTINCHANNEL            ERR_UNKNOWNMODE
+        //    RPL_CHANNELMODEIS
+        //    RPL_BANLIST                     RPL_ENDOFBANLIST
+        //    RPL_EXCEPTLIST                  RPL_ENDOFEXCEPTLIST
+        //    RPL_INVITELIST                  RPL_ENDOFINVITELIST
+        //    RPL_UNIQOPIS
+			logger.log(DEBUG, "Channel found " + request[0]);
+			if (it->isAnOperatorOrOwner(client)) {
+				logger.log(DEBUG, "user is an actual owner or operator of the channel");
+				std::string mode = request[1];
+				if (checkAction(mode) == ADD) {
+					logger.log(DEBUG, "mode prefix ADD");
+					if (mode == "+i") {
+						it->setInviteOnly(true);
+					} else if (mode == "+t") {
+						//
+					} else if (mode == "+k") {
+						it->setChannelKey(request[2]);
+					} else if (mode == "+o") {
+						std::map<int, Client>::iterator u = findClient(request[2]);
+						if (u != guest.end()) {
+							if (it->hasUser(request[2])) {
+									it->add_operator(u->second);
+							} else {
+								logger.log(DEBUG, "User not found in this channel");
+							}
+						} else {
+							logger.log(DEBUG, "user not found");
+						}
+					} else if (mode == "+l") {
+						it->setChannelLimit(std::atoi(request[2].c_str()));
+					}
+				}
+				else if (checkAction(mode) == REMOVE) {
+					logger.log(DEBUG, "mode prefix REMOVE");
+					if (mode == "-i") {
+						it->setInviteOnly(false);
+					} else if (mode == "-t") {
+						//
+					} else if (mode == "-k") {
+						it->setChannelKey("");
+					} else if (mode == "-o") {
+						std::map<int, Client>::iterator u = findClient(request[2]);
+						if (u != guest.end()) {
+							if (it->hasUser(request[2])) {
+									it->remove_operator(u->second);
+							} else {
+								logger.log(DEBUG, "User not found in this channel");
+							}
+						} else {
+							logger.log(DEBUG, "user not found");
+						}
+					} else if (mode == "-l") {
+						it->setChannelLimit(-1);
+					}
+				} else {
+					// UNKNOWN mode
+					logger.log(DEBUG, "Unkown mode prefix " + mode);
+				}
+			} else {
+				logger.log(DEBUG, "You are not an owner or an operator");
+			}
+		}
+		else {
+			logger.log(DEBUG, "Channel not found");
+			return ;
+		}
 	}
-	
-	if (request.size() > 2)
-	{
-		//parsing
-		std::cout << request.size() << std::endl;
+	else {
+		// USER MODE
+		logger.log(DEBUG, "Basic implementation of mode operations on users");
+		std::map<int, Client>::iterator cl = findClient(request[0]);
+		// std::map<int, Client>::iterator it;
+		// for (it = guest.begin(); it != guest.end(); ++it) {
+		// 	std::cout << it->second.getNickname() << std::endl;
+		// }
+
+		if (cl != guest.end()) {
+			// std::cout << "WE FOUND A USER MODE" << std::endl;
+			logger.log(DEBUG, "User found " + request[0]);
+			std::string mode = request[1];
+			if(mode.empty())
+			{
+				if(cl->second.get_user_mode().empty())
+					logger.log(DEBUG, "user" + request[0] + "doesn't have any modes yet");
+				else
+					print_usermode(cl->second.get_user_mode(), client);
+			}
+			if(checkAction(mode) == ADD)
+			{
+				if (mode == "+i")
+				{
+					logger.log(DEBUG, "Adding invisible mode ...");
+					cl->second.set_invisible(true);
+					cl->second.get_user_mode().push_back(u_i);
+				}
+				else if (mode == "+w")
+				{
+					logger.log(DEBUG, "Adding recieve wallops mode ...");
+					cl->second.set_wallops(true);
+					cl->second.get_user_mode().push_back(u_w);
+				}
+			}
+			else if(checkAction(mode) == REMOVE)
+			{
+				if (mode == "-i")
+				{
+					logger.log(DEBUG, "Removing invisible mode ...");
+					cl->second.set_invisible(false);
+				}
+				else if (mode == "-w")
+				{
+					logger.log(DEBUG, "Removing recieve wallops mode ...");
+					cl->second.set_wallops(false);
+				}
+			}
+		}
 	}
-	else
-	{
-		logger.log(ERROR, "Not enough MODE arguments");
-	}
-	
-	for(std::vector<int>::size_type i = 0 ; i < request.size(); i++)
-	{
-		std::cout << "element " << i << ": "<< request[i] << std::endl;
-	}
-	
-	
 }
 
 // void irc_server::JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client) {

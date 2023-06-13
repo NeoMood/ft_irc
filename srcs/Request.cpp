@@ -94,26 +94,37 @@ void Request::parseRequest(std::string &line)
 	std::string delim = " ";
 	size_t pos = line.find(delim);
 
-	if (pos != std::string::npos)
+	/// line === names cmpr === this->cmd;
+	// 
+
+	if(line == "NAMES")
 	{
-		this->_cmd = line.substr(0, pos);
-		std::transform(this->_cmd.begin(), this->_cmd.end(), this->_cmd.begin(), ::toupper);
-		line.erase(0, pos + delim.length());
-		if (this->_cmd == "PASS" || this->_cmd == "NICK")
-			request.push_back(line.substr(0, line.length()));
-		else if (this->_cmd == "USER" || this->_cmd == "PRIVMSG" || this->_cmd == "KICK" || this->_cmd == "TOPIC")
+		this->_cmd = line;
+	}
+	else
+	{
+		if (pos != std::string::npos)
 		{
-			this->request = _split(line, delim);
-			join_strings(this->request);
-		}
-		else if (this->_cmd == "INVITE" || this->_cmd == "MODE")
-			this->request = _split(line, delim);
-		else if (this->_cmd == "JOIN")
-		{
-			std::string delim = ",";
-			this->_request = _splitJOIN(line, delim);
+			this->_cmd = line.substr(0, pos);
+			std::transform(this->_cmd.begin(), this->_cmd.end(), this->_cmd.begin(), ::toupper);
+			line.erase(0, pos + delim.length());
+			if (this->_cmd == "PASS" || this->_cmd == "NICK")
+				request.push_back(line.substr(0, line.length()));
+			else if (this->_cmd == "USER" || this->_cmd == "PRIVMSG" || this->_cmd == "KICK" || this->_cmd == "TOPIC")
+			{
+				this->request = _split(line, delim);
+				join_strings(this->request);
+			}
+			else if (this->_cmd == "INVITE" || this->_cmd == "MODE" || this->_cmd == "TOPIC")
+				this->request = _split(line, delim);
+			else if (this->_cmd == "JOIN")
+			{
+				std::string delim = ",";
+				this->_request = _splitJOIN(line, delim);
+			}
 		}
 	}
+
 }
 
 void Request::setChannel(std::vector<std::string> _vector)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/27 20:58:11 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/06/12 18:14:46 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,12 @@
 
 #pragma	once
 
+typedef enum {
+	UNKOWN = -1,
+	REMOVE = 0,
+	ADD = 1,
+} e_action;
+
 class irc_server{
 	private:
 		int	socket_fd;
@@ -49,6 +55,9 @@ class irc_server{
 		std::vector<pollfd> vec_fd;
 		std::vector<Channel> channels;
 		Logger& logger;
+		std::string server_pass;
+		bool checkChannelMask(char c);
+		e_action checkAction(std::string mode);
     public:
 		class ChannelNotFound: public std::exception {
 			public:
@@ -89,5 +98,8 @@ class irc_server{
 		void	INVITE(std::vector<std::string> request, Client& client); // saad
 		void	TOPIC(std::vector<std::string> request, Client& client); // saad
 		void	MODE(std::vector<std::string> request, Client& client); // saad mode for user, ayoub mode for channel
+		void	NAMES(std::vector<std::string> request, Client& client);
 		std::vector<Channel>::iterator findChannelByName(std::string channel);
+		bool isoperator(std::map<std::string, Client&> operators, int userFd);
+		std::map<int, Client>::iterator findClient(std::string nickname);
 };

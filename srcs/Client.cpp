@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.cpp                                         :+:      :+:    :+:   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
+/*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 13:00:39 by yamzil           ###   ########.fr       */
+/*   Updated: 2023/06/13 15:42:49 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,18 @@ void    Client::setUsernameSited(bool _Usernamesited){
     this->UsernameSited = _Usernamesited;
 }
 
+void Client::set_disguised(bool disguised){
+    this->disguised = disguised;
+}
+
+void Client::set_invisible(bool invisible){
+    this->invisible = invisible;
+}
+
+void Client::set_wallops(bool wallops){
+    this->wallops = wallops;
+}
+
 // Getters
 
 bool    Client::getNickNameSited(){
@@ -76,6 +88,7 @@ bool    Client::getNickNameSited(){
 bool    Client::getPasswordApproved(){
     return(this->PasswordApproved);
 }
+
 
 int Client::getFdNumber(void){
     return(this->FdNumber);
@@ -103,4 +116,21 @@ bool    Client::getUserNameSited(void){
 
 void    Client::setChannelMode(channel_mode_t _mode) {
     channel_mode.push_back(_mode);
+}
+
+void    Client::setUserMode(user_mode_t _mode) {
+    user_mode.push_back(_mode);
+}
+
+bool Client::get_invisible(void){
+    return (this->invisible);
+}
+
+bool Client::get_wallops(void){
+    return (this->wallops);
+}
+
+std::vector<user_mode_t> Client::get_user_mode(void)
+{
+    return (this->user_mode);
 }
