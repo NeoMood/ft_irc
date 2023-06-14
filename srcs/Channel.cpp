@@ -205,5 +205,9 @@ int Channel::getUsersTotal() {
     return this->__users.size() + 1;
 }
 
+std::string Channel::getChannelTopic() const {
+    return this->__topic;
+}
+
 Channel::~Channel() {
 }

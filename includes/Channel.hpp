@@ -57,6 +57,7 @@ class Channel {
         std::map<std::string, Client&>  getUsers();
         void sendToAllUsers(Client& client, std::string message, bool sendToOwner);
         std::string getChannelName() const;
+        std::string getChannelTopic() const;
         std::string getChannelKey() const;
         bool hasKey() const;
         Client getCreator() const;

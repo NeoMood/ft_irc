@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/13 17:33:54 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/14 19:46:58 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,21 +191,58 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 
 void	irc_server::TOPIC(std::vector<std::string> request, Client& client)
 {
-	(void) client;
+	    //        ERR_NEEDMOREPARAMS              ERR_NOTONCHANNEL
+        //    RPL_NOTOPIC                     RPL_TOPIC
+        //    ERR_CHANOPRIVSNEEDED            ERR_NOCHANMODES	
 	logger.log(DEBUG, "TOPIC");
 	std::vector<Channel>::iterator it = findChannelByName(request[0]);
-	std::cout << "request[0] = " << request[0] << "   " <<  "request[1] = " << request[1] << std::endl;
-	
 	if(it != channels.end())
-	{
-		logger.log(DEBUG, "Channel Found ... setting topic!");
-		it->setChannelTopic(request[1]);
+	{	
+		if(isoperator(it->getOperators(), client.getFdNumber()))
+		{
+			if(request.size() > 2)
+			{
+				puts("too many arguments error here!");
+				return ;
+			}
+			else if(request[1].empty())
+			{
+				if(it->getChannelTopic().empty())
+				{
+					logger.log(DEBUG, "Channel " + request[0] + " has no topic yet");
+					return ;
+				}
+				else
+				{
+					logger.log(DEBUG, "user " + client.getNickname() + " checking topic for Channel " + request[0]);
+					std::cout << "- " << it->getChannelTopic() << std::endl;
+				}
+				puts("check the channel topic here!");
+			}
+			else
+			{
+				if(request[1][0] == ':')
+				{
+					logger.log(DEBUG, "Found token!");
+					if(request[1][1])
+					{
+						it->setChannelTopic(&request[1][1]);
+						logger.log(DEBUG, "user " + client.getNickname() + " setting topic for Channel " + request[0] + " to " + it->getChannelTopic());
+					}
+					else
+					{
+						it->setChannelTopic(NULL);
+						logger.log(DEBUG, "user " + client.getNickname() + " cleared topic for " + request[0]);
+					}
+				}
+			}
+		}
+		else
+			logger.log(DEBUG, "You are not an operator for " + request[0]);
 	}
 	else
-	{
 		logger.log(DEBUG, "Channel Not found");
-		return ;
-	}
+	return ;
 }
 
 bool irc_server::checkChannelMask(char c) {
