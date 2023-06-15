@@ -6,9 +6,11 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/13 17:30:02 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/15 22:52:19 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#pragma	once
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -38,7 +40,6 @@
 #define	EXIT_FAILURE 1
 #define MAX_CHANNELS 20
 
-#pragma	once
 
 typedef enum {
 	UNKOWN = -1,

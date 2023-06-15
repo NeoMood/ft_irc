@@ -47,7 +47,7 @@ typedef enum
     u_s = 3, //Secure connection
     u_x = 4, //Cloaking disguises the user's actual IP address, replacing it with a generic or obfuscated address
     u_D = 5, //allows the user to ignore all channel messages while still being connected to the channel
-
+    u_r = 6,
 } user_mode_t;
 
 class Client
@@ -59,6 +59,7 @@ private:
     bool disguised;
     bool invisible;
     bool wallops;
+    bool rest_conx;
     std::string Nickname;
     std::string IPAddress;
     std::string UserName;
@@ -91,6 +92,7 @@ public:
     void set_disguised(bool disguised);
     void set_invisible(bool invisible);
     void set_wallops(bool wallops);
+    void set_rest_conx(bool rest_conx);
     // Getters
     bool getNickNameSited(void);
     bool getUserNameSited(void);
@@ -103,6 +105,7 @@ public:
     std::string getMode(void);
     bool get_invisible(void);
     bool get_wallops(void);
+    bool get_rest_conx(void);
     std::vector<user_mode_t> get_user_mode(void);
     void decrementChannelCount();
     int getChannelCount() const;

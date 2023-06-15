@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/13 17:14:59 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/15 23:40:26 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,10 @@ void Client::set_invisible(bool invisible){
     this->invisible = invisible;
 }
 
+void Client::set_rest_conx(bool rest_conx){
+    this->rest_conx = rest_conx;
+}
+
 void Client::set_wallops(bool wallops){
     this->wallops = wallops;
 }
@@ -141,6 +145,10 @@ bool Client::get_invisible(void){
 
 bool Client::get_wallops(void){
     return (this->wallops);
+}
+
+bool Client::get_rest_conx(void){
+    return (this->rest_conx);
 }
 
 std::vector<user_mode_t> Client::get_user_mode(void)

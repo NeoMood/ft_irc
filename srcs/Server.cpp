@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/14 19:46:58 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/15 23:38:00 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,57 +191,65 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 
 void	irc_server::TOPIC(std::vector<std::string> request, Client& client)
 {
-	    //        ERR_NEEDMOREPARAMS              ERR_NOTONCHANNEL
-        //    RPL_NOTOPIC                     RPL_TOPIC
-        //    ERR_CHANOPRIVSNEEDED            ERR_NOCHANMODES	
+	//    ERR_NEEDMOREPARAMS              ERR_NOTONCHANNEL
+    //    RPL_NOTOPIC                     RPL_TOPIC
+    //    ERR_CHANOPRIVSNEEDED            ERR_NOCHANMODES	
 	logger.log(DEBUG, "TOPIC");
 	std::vector<Channel>::iterator it = findChannelByName(request[0]);
-	if(it != channels.end())
+	if(request.size() == 0)
 	{	
-		if(isoperator(it->getOperators(), client.getFdNumber()))
-		{
-			if(request.size() > 2)
+		if(it != channels.end())
+		{	
+			if(it->hasUser(client.getNickname()))
 			{
-				puts("too many arguments error here!");
-				return ;
-			}
-			else if(request[1].empty())
-			{
-				if(it->getChannelTopic().empty())
+				if(isoperator(it->getOperators(), client.getFdNumber()))
 				{
-					logger.log(DEBUG, "Channel " + request[0] + " has no topic yet");
-					return ;
-				}
-				else
-				{
-					logger.log(DEBUG, "user " + client.getNickname() + " checking topic for Channel " + request[0]);
-					std::cout << "- " << it->getChannelTopic() << std::endl;
-				}
-				puts("check the channel topic here!");
-			}
-			else
-			{
-				if(request[1][0] == ':')
-				{
-					logger.log(DEBUG, "Found token!");
-					if(request[1][1])
+					if(request.size() > 2)
 					{
-						it->setChannelTopic(&request[1][1]);
-						logger.log(DEBUG, "user " + client.getNickname() + " setting topic for Channel " + request[0] + " to " + it->getChannelTopic());
+						logger.log(ERROR, "Too many arguments!");
+						return ;
+					}
+					else if(request[1].empty())
+					{
+						if(it->getChannelTopic().empty())
+							logger.log(DEBUG, "Channel " + request[0] + " has no topic yet");
+						else
+						{
+							logger.log(DEBUG, "user " + client.getNickname() + " checking topic for Channel " + request[0]);
+							std::cout << "- " << it->getChannelTopic() << std::endl;
+						}
 					}
 					else
 					{
-						it->setChannelTopic(NULL);
-						logger.log(DEBUG, "user " + client.getNickname() + " cleared topic for " + request[0]);
+						if(request[1][0] == ':')
+						{
+							logger.log(DEBUG, "Found token!");
+							if(request[1][1])
+							{
+								it->setChannelTopic(&request[1][1]);
+								send_message(client.getFdNumber(), RPL_TOPIC(client.getNickname(), it->getChannelName()));
+								logger.log(DEBUG, "user " + client.getNickname() + " setting topic for Channel " + request[0] + " to " + it->getChannelTopic());
+							}
+							else
+							{
+								it->setChannelTopic(NULL);
+								send_message(client.getFdNumber(), RPL_NOTOPIC(client.getNickname(), it->getChannelName()));
+								logger.log(DEBUG, "user " + client.getNickname() + " cleared topic for " + request[0]);
+							}
+						}
 					}
 				}
+				else
+					send_message(client.getFdNumber(), ERR_CHANOPRIVSNEEDED(it->getChannelName()));
 			}
+			else
+				send_message(client.getFdNumber(), ERR_NOTONCHANNEL(it->getChannelName()));
 		}
 		else
-			logger.log(DEBUG, "You are not an operator for " + request[0]);
+			logger.log(DEBUG, "Channel Not found");
 	}
 	else
-		logger.log(DEBUG, "Channel Not found");
+		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(std::string("TOPIC"), client.getNickname()));
 	return ;
 }
 
@@ -277,6 +285,10 @@ bool irc_server::isoperator(std::map<std::string, Client&> operators, int userFd
 
 void	irc_server::INVITE(std::vector<std::string> request, Client& client) 
 {	
+	// ERR_NEEDMOREPARAMS              ERR_NOSUCHNICK
+	// ERR_NOTONCHANNEL                ERR_USERONCHANNEL
+	// ERR_CHANOPRIVSNEEDED
+	// RPL_INVITING                    RPL_AWAY
 	logger.log(DEBUG, "INVITE");
 	std::vector<Channel>::iterator it = findChannelByName(request[1]);
 	// std::cout << "request[1] = " << request[1] << "   " << channels.begin()->getChannelName() << std::endl;
@@ -298,13 +310,11 @@ void	irc_server::INVITE(std::vector<std::string> request, Client& client)
 					else
 						send_message(client.getFdNumber(), "You can't invite yourself\n");
 				}
-				// else
-				// 	send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
+				else
+					send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
 			}
-			else {
-				logger.log(DEBUG, "You do not have permission to use INVITE command");
-				return ;
-			}
+			else 
+				send_message(client.getFdNumber(), ERR_CHANOPRIVSNEEDED(request[1]));
 			
 		}
 		else if (it->is_already_join_2(request[1]))
@@ -335,7 +345,7 @@ void	irc_server::INVITE(std::vector<std::string> request, Client& client)
 			channels.end()->invite_user(cl->second);
 		}
 	}
-	
+	return ;
 }	
 
 
@@ -374,7 +384,7 @@ void irc_server::PASS(std::vector<std::string> request, Client &client)
 		return;
 	}
 	else if (request[0] != this->passwd){
-		send_message(client.getFdNumber(), ERR_PASSWDMISMATCH(client.getNickname(), client.getUserName()));
+		send_message(client.getFdNumber(), ERR_PASSWDMISMATCH(client.getNickname(), client.getUserName(), host));
 		return;
 	}
 	else if (request[0] == this->passwd && !client.getPasswordApproved()){
@@ -383,7 +393,7 @@ void irc_server::PASS(std::vector<std::string> request, Client &client)
 		return ;
 	}
 	else if (client.getPasswordApproved() == true){
-		send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName()));
+		send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName(), host));
 		return ;
 	}
 }
@@ -393,7 +403,7 @@ void irc_server::NICK(std::vector<std::string> request, Client &client)
 {
 	if (!request.size())
 	{
-		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname(), client.getUserName()));
+		send_message(client.getFdNumber(), ERR_NONICKNAMEGIVEN(client.getNickname()));
 	}
 	else if (check_param(request[0].c_str(), client) && client.getPasswordApproved())
 	{
@@ -422,7 +432,7 @@ void irc_server::NICK(std::vector<std::string> request, Client &client)
 		}
 		else
 		{
-			send_message(client.getFdNumber(), ERR_NICKNAMEINUSE(request[0], client.getUserName()));
+			send_message(client.getFdNumber(), ERR_NICKNAMEINUSE(request[0]));
 		}
 	}
 }
@@ -450,7 +460,7 @@ void irc_server::USER(std::vector<std::string> request, Client &client)
 			}
 		}
 		else
-			send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName()));
+			send_message(client.getFdNumber(), ERR_ALREADYREGISTRED(client.getNickname(), client.getUserName(), host));
 	}
 }
 
@@ -750,6 +760,10 @@ void print_usermode(std::__1::vector<user_mode_t> modelist, Client client)
 			case 5:
 				std::cout << "- Deaf" << std::endl; 
 				break;
+			case 6:
+				if(client.get_rest_conx() == true)
+					std::cout << "- Restricted connection" << std::endl; 
+				break;
 		}
 	}
 }
@@ -874,6 +888,15 @@ void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 					cl->second.set_wallops(true);
 					cl->second.get_user_mode().push_back(u_w);
 				}
+				else if (mode == "+r")
+				{
+					logger.log(DEBUG, "Adding restricted connection mode ...");
+					cl->second.set_rest_conx(true);
+					cl->second.get_user_mode().push_back(u_r);
+				}
+				else
+					logger.log(DEBUG, "Unknown Mode");
+					
 			}
 			else if(checkAction(mode) == REMOVE)
 			{
@@ -887,6 +910,13 @@ void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 					logger.log(DEBUG, "Removing recieve wallops mode ...");
 					cl->second.set_wallops(false);
 				}
+				else if (mode == "-r")
+				{
+					logger.log(DEBUG, "Removing restricted connection mode ...");
+					cl->second.set_rest_conx(false);
+				}
+				else
+					logger.log(DEBUG, "Unknown Mode");
 			}
 		}
 	}
