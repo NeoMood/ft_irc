@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/16 21:36:05 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/17 00:36:53 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,7 +202,7 @@ void	irc_server::TOPIC(std::vector<std::string> request, Client& client)
 		{	
 			if(it->hasUser(client.getNickname()))
 			{
-				if(isoperator(it->getOperators(), client.getFdNumber()))
+				if(it->isAnOperatorOrOwner(client))
 				{
 					if(request.size() > 2)
 					{
@@ -857,70 +857,92 @@ void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 		}
 	}
 	else {
-		// USER MODE
+		// ERR_NEEDMOREPARAMS              ERR_USERSDONTMATCH
+		// ERR_UMODEUNKNOWNFLAG            RPL_UMODEIS
 		logger.log(DEBUG, "Basic implementation of mode operations on users");
-		std::map<int, Client>::iterator cl = findClient(request[0]);
 		// std::map<int, Client>::iterator it;
 		// for (it = guest.begin(); it != guest.end(); ++it) {
 		// 	std::cout << it->second.getNickname() << std::endl;
 		// }
+		if(request.size() >= 1)
+		{
+			std::map<int, Client>::iterator cl = findClient(request[0]);
+			if (cl != guest.end()) 
+			{
+				if(request[0] == client.getNickname())
+				{
+					// std::cout << "WE FOUND A USER MODE" << std::endl;
+					logger.log(DEBUG, "User found " + request[0]);
+					std::string mode = request[1];
+					if (mode.length() >= 2 && (mode[0] == '+' || mode[0] == '-')) {
+						char sign = mode[0];
+						int pos = 1;
+						while (pos < mode.length() && mode[pos] == sign) {
+							pos++;
+						}
 
-		if (cl != guest.end()) {
-			// std::cout << "WE FOUND A USER MODE" << std::endl;
-			logger.log(DEBUG, "User found " + request[0]);
-			std::string mode = request[1];
-			if(mode.empty())
-			{
-				if(cl->second.get_user_mode().empty())
-					logger.log(DEBUG, "user" + request[0] + "doesn't have any modes yet");
+						if (pos < mode.length() && mode[pos] == 'x') {
+							mode = sign + std::string(1, mode[pos]);
+						}
+					}
+					if(mode.empty())
+					{
+						if(cl->second.get_user_mode().empty())
+							logger.log(DEBUG, "user" + request[0] + "doesn't have any modes yet");
+						else
+							print_usermode(cl->second.get_user_mode(), client);
+					}
+					if(checkAction(mode) == ADD)
+					{
+						if (mode == "+i")
+						{
+							logger.log(DEBUG, "Adding invisible mode ...");
+							cl->second.set_invisible(true);
+							cl->second.get_user_mode().push_back(u_i);
+						}
+						else if (mode == "+w")
+						{
+							logger.log(DEBUG, "Adding recieve wallops mode ...");
+							cl->second.set_wallops(true);
+							cl->second.get_user_mode().push_back(u_w);
+						}
+						else if (mode == "+r")
+						{
+							logger.log(DEBUG, "Adding restricted connection mode ...");
+							cl->second.set_rest_conx(true);
+							cl->second.get_user_mode().push_back(u_r);
+						}
+						else
+							send_message(client.getFdNumber(), ERR_UMODEUNKNOWNFLAG(client.getNickname()));
+							
+					}
+					else if(checkAction(mode) == REMOVE)
+					{
+						if (mode == "-i")
+						{
+							logger.log(DEBUG, "Removing invisible mode ...");
+							cl->second.set_invisible(false);
+						}
+						else if (mode == "-w")
+						{
+							logger.log(DEBUG, "Removing recieve wallops mode ...");
+							cl->second.set_wallops(false);
+						}
+						else if (mode == "-r")
+						{
+							logger.log(DEBUG, "Removing restricted connection mode ...");
+							cl->second.set_rest_conx(false);
+						}
+						else
+							send_message(client.getFdNumber(), ERR_UMODEUNKNOWNFLAG(client.getNickname()));
+					}
+				}
 				else
-					print_usermode(cl->second.get_user_mode(), client);
-			}
-			if(checkAction(mode) == ADD)
-			{
-				if (mode == "+i")
-				{
-					logger.log(DEBUG, "Adding invisible mode ...");
-					cl->second.set_invisible(true);
-					cl->second.get_user_mode().push_back(u_i);
-				}
-				else if (mode == "+w")
-				{
-					logger.log(DEBUG, "Adding recieve wallops mode ...");
-					cl->second.set_wallops(true);
-					cl->second.get_user_mode().push_back(u_w);
-				}
-				else if (mode == "+r")
-				{
-					logger.log(DEBUG, "Adding restricted connection mode ...");
-					cl->second.set_rest_conx(true);
-					cl->second.get_user_mode().push_back(u_r);
-				}
-				else
-					logger.log(DEBUG, "Unknown Mode");
-					
-			}
-			else if(checkAction(mode) == REMOVE)
-			{
-				if (mode == "-i")
-				{
-					logger.log(DEBUG, "Removing invisible mode ...");
-					cl->second.set_invisible(false);
-				}
-				else if (mode == "-w")
-				{
-					logger.log(DEBUG, "Removing recieve wallops mode ...");
-					cl->second.set_wallops(false);
-				}
-				else if (mode == "-r")
-				{
-					logger.log(DEBUG, "Removing restricted connection mode ...");
-					cl->second.set_rest_conx(false);
-				}
-				else
-					logger.log(DEBUG, "Unknown Mode");
+					send_message(client.getFdNumber(), ERR_USERSDONTMATCH);
 			}
 		}
+		else
+			send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(std::string("MODE"), client.getNickname()));
 	}
 }
 
