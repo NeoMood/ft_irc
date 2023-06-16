@@ -129,9 +129,9 @@ std::map<std::string, Client&>  Channel::getOperators() {
 }
 
 bool Channel::hasUser(std::string nickname) {
-    // if (this->__users.find(nickname) != this->__users.end()) {
-    //     return this->__users.find(nickname);
-    // }
+    if (__owner.getNickname() == nickname) {
+        return true;
+    }
     for (std::map<std::string, Client&>::iterator it = __users.begin(); it != __users.end(); it++) {
         // std::cout << "nickname: " << it->first << " name " << nickname << std::endl;
         if (it->first == nickname) {
