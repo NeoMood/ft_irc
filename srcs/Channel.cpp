@@ -39,12 +39,12 @@ bool Channel::is_already_join(Client& client) {
     return false;
 }
 
-bool Channel::is_already_join_2(std::string nickname) {
-    if (this->__users.find(nickname) != this->__users.end()) {
-        return true;
-    }
-    return false;
-}
+// bool Channel::is_already_join_2(std::string nickname) {
+//     if (this->__users.find(nickname) != this->__users.end()) {
+//         return true;
+//     }
+//     return false;
+// }
 
 int Channel::invite_user(Client& client) {
     Logger logger = Logger::getLogger();

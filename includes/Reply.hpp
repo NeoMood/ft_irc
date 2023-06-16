@@ -36,6 +36,7 @@
 #define RPL_CHANNELMODEIS(chan, nick, mode, option)       "324 :" + nick + " MODE " + chan + " " + mode + " :" + option + "\r\n"
 #define RPL_NOTOPIC(nick, chan) "331 " + nick + " " + chan + " :\r\n"
 #define RPL_TOPIC(nick, chan) "332 " + nick + " " + chan + " :\r\n"
+#define RPL_INVITING(chan, nick) "341 " + chan + " " + nick + "Client is invired to the channel succesfully :\r\n"
 
 #define RPL_NAMREPLY(nick, chan, users)  "353 " + nick + " = " + chan + " :@" + users + "\r\n"
 #define RPL_ENDOFNAMES(chan) "366 " + chan + " :End of NAMES list\r\n"
@@ -87,5 +88,3 @@
 #define ERR_INVALIDKEYS(nick, reply) "995 " + nick + reply + "\r\n"
 #define RPL_LISTFILE(nick, file) "996 " + nick + " :" + file + "\r\n"
 #define RPL_LISTFILEEND(nick) "997 " + nick + " :End of LIST\r\n"
-
-

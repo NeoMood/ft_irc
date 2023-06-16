@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/15 23:38:00 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/16 18:38:50 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,7 +271,6 @@ std::map<int, Client>::iterator irc_server::findClient(std::string nickname) {
 	return guest.end();
 }
 
-
 bool irc_server::isoperator(std::map<std::string, Client&> operators, int userFd)
 {
 	std::map<std::string, Client&>::iterator it = operators.begin();
@@ -290,64 +289,54 @@ void	irc_server::INVITE(std::vector<std::string> request, Client& client)
 	// ERR_CHANOPRIVSNEEDED
 	// RPL_INVITING                    RPL_AWAY
 	logger.log(DEBUG, "INVITE");
-	std::vector<Channel>::iterator it = findChannelByName(request[1]);
-	// std::cout << "request[1] = " << request[1] << "   " << channels.begin()->getChannelName() << std::endl;
-	
-	if(it != channels.end())
-	{
-		logger.log(DEBUG, "Found a channel!");
-		if(it->isInviteOnly())
+	if(request.size() >= 2)
+	{	
+		std::vector<Channel>::iterator it = findChannelByName(request[1]);
+		if(it != channels.end())
 		{
-			logger.log(DEBUG, "This channel is Invite Only");
-			if(isoperator(it->getOperators(), client.getFdNumber()))
+			logger.log(DEBUG, "Found a channel!");
+			std::map<int, Client>::iterator cl = findClient(client.getNickname());
+			if(it->hasUser(cl->second.getNickname()))
 			{
-				logger.log(DEBUG, "You're an Operator! You can Proceed ...");
-				std::map<int, Client>::iterator it2 = findClient(request[0]);
-				it->invite_user(it2->second);
-				if (it2 != guest.end()) {
-					if (it2->first != client.getFdNumber())
-						it->invite_user(it2->second);
-					else
-						send_message(client.getFdNumber(), "You can't invite yourself\n");
+				if(it->isInviteOnly())
+				{
+					logger.log(DEBUG, "This channel is Invite Only");
+					if(it->isAnOperatorOrOwner(client))
+					{
+						logger.log(DEBUG, "You're an Operator! You can Proceed ...");
+						std::map<int, Client>::iterator it2 = findClient(request[0]);
+						if (it2 != guest.end()) {
+							if (it2->first != client.getFdNumber())
+							{
+								it->invite_user(it2->second);
+								send_message(client.getFdNumber(), RPL_INVITING(request[1], request[0]));
+							}
+							else
+								send_message(client.getFdNumber(), "You can't invite yourself\n");
+						}
+						else
+							send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
+					}
+					else 
+						send_message(client.getFdNumber(), ERR_CHANOPRIVSNEEDED(request[1]));
+					
 				}
-				else
-					send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
+				else if (it->hasUser(request[1]))
+				{
+					logger.log(DEBUG, "User is already a member of this channel");
+					send_message(client.getFdNumber(), ERR_USERONCHANNEL(request[0], request[1])); 
+				}
+				else if (!it->hasUser(request[1]) && it->getUserLimit() != -1 && it->getUsersTotal() >= it->getUserLimit()) 
+					send_message(client.getFdNumber(), "Error we have reached channel limit\n");
 			}
-			else 
-				send_message(client.getFdNumber(), ERR_CHANOPRIVSNEEDED(request[1]));
-			
-		}
-		else if (it->is_already_join_2(request[1]))
-		{
-			send_message(client.getFdNumber(), "User is already a member of this channel\n");
-			return ;
-		}
-		else if (!it->is_already_join_2(request[1]) && it->getUserLimit() != -1 && it->getUsersTotal() >= it->getUserLimit()) 
-		{
-			send_message(client.getFdNumber(), "Error we have reach channel limit\n");
-			return ;
-		}
-	}	
-	else
-	{
-		logger.log(DEBUG, "Cannot find existing channel, creating one ...");
-		// std::pair<std::string, std::string> pair = request[i];
-		// std::cout << "Channel name: " << pair.first << " key: " << pair.second << std::endl;
-		if (!client.getUserName().length()) {
-			send_message(client.getFdNumber(), ERR_NOTREGISTERED(client.getNickname()));
-			return ;
-		}
-		if (checkChannelMask(request[1][0])) {
-			send_message(client.getFdNumber(), ERR_BADCHANMASK(client.getNickname(), request[1]));
-		} else {
-			channels.push_back(Channel(request[1], client));
-			std::map<int, Client>::iterator cl = findClient(request[0]);
-			channels.end()->invite_user(cl->second);
+			else
+				send_message(client.getFdNumber(), ERR_NOTONCHANNEL(it->getChannelName()));
 		}
 	}
+	else
+		send_message(client.getFdNumber(), ERR_NEEDMOREPARAMS(std::string("INVITE"), client.getNickname()));
 	return ;
-}	
-
+}
 
 
 // void	irc_server::INVITE(std::vector<std::string> request, Client& client) {
