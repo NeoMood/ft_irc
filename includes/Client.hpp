@@ -70,6 +70,7 @@ private:
     std::vector<channel_mode_t> channel_mode;
     std::vector<user_mode_t> user_mode;
     int        _channels_count;
+    bool       _server_operator;
 
 public:
     Client();
@@ -93,6 +94,7 @@ public:
     void set_invisible(bool invisible);
     void set_wallops(bool wallops);
     void set_rest_conx(bool rest_conx);
+    void setServerOper(bool isOper);
     // Getters
     bool getNickNameSited(void);
     bool getUserNameSited(void);
@@ -106,6 +108,7 @@ public:
     bool get_invisible(void);
     bool get_wallops(void);
     bool get_rest_conx(void);
+    bool isServerOper() const;
     std::vector<user_mode_t> get_user_mode(void);
     void decrementChannelCount();
     int getChannelCount() const;

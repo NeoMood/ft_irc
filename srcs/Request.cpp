@@ -108,7 +108,7 @@ void Request::parseRequest(std::string &line)
 			this->_cmd = line.substr(0, pos);
 			std::transform(this->_cmd.begin(), this->_cmd.end(), this->_cmd.begin(), ::toupper);
 			line.erase(0, pos + delim.length());
-			if (this->_cmd == "PASS" || this->_cmd == "NICK")
+			if (this->_cmd == "PASS" || this->_cmd == "NICK" || this->_cmd == "OPER")
 				request.push_back(line.substr(0, line.length()));
 			else if (this->_cmd == "USER" || this->_cmd == "PRIVMSG" || this->_cmd == "KICK" || this->_cmd == "TOPIC")
 			{

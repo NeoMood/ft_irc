@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/17 00:36:53 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/17 21:01:45 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,6 +161,8 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 							KICK(object.getRequest(), guest[vec_fd[i].fd]);
 						else if (!object.getcmd().compare(0, object.getcmd().length(), "JOIN"))
 							JOIN(object.getRequest_(), guest[vec_fd[i].fd]);
+						else if (!object.getcmd().compare(0, object.getcmd().length(), "OPER"))
+							OPER(object.getRequest(), guest[vec_fd[i].fd]);
 						// else if (!object.getcmd().compare(0, object.getcmd().length(), "PRIVMSG"))
 						// 	PRIVMSG(object.getRequest(), guest[vec_fd[i].fd]);
 						else if (!object.getcmd().compare(0, object.getcmd().length(), "INVITE"))
@@ -188,6 +190,30 @@ void irc_server::AcceptIncomingconnection(Client &Client_data)
 }
 
 //// COMMANDS
+
+int irc_server::is_present(std::vector<std::string> args, int index) {
+	try {
+		if (args.at(index).empty()) {
+			return 0;
+		}
+		return 1;
+	} catch(std::out_of_range e) {
+		return 0;
+	}
+}
+
+void irc_server::OPER(std::vector<std::string> request, Client& client) {
+	if (!is_present(request, 0) || !is_present(request, 1)) {
+		send_message(client.getFdNumber(), msg + ERR_NEEDMOREPARAMS(std::string("OPER"), client.getNickname()));
+		return ;
+	}
+	if (request[0].compare(0, request[0].length(), server_pass) || request[1] != client.getNickname()) {
+		send_message(client.getFdNumber(), msg + ERR_PASSWDMISMATCH(client.getNickname(), client.getUserName(), host));
+		return ;
+	}
+	client.setServerOper(true);
+	send_message(client.getFdNumber(), RPL_YOUREOPER(client.getNickname()));
+}
 
 void	irc_server::TOPIC(std::vector<std::string> request, Client& client)
 {
@@ -751,7 +777,6 @@ void print_usermode(std::__1::vector<user_mode_t> modelist, Client client)
 				std::cout << "- Receiving wallops" << std::endl;
 				break;
 			case 2:
-				std::cout << "- Operator" << std::endl;
 				break;
 			case 3:
 				std::cout << "- Secure connection" << std::endl;
@@ -767,6 +792,8 @@ void print_usermode(std::__1::vector<user_mode_t> modelist, Client client)
 					std::cout << "- Restricted connection" << std::endl; 
 				break;
 		}
+		if(client.isServerOper() == true)
+			std::cout << "- Server Operator" << std::endl;
 	}
 }
 
@@ -876,7 +903,7 @@ void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 					std::string mode = request[1];
 					if (mode.length() >= 2 && (mode[0] == '+' || mode[0] == '-')) {
 						char sign = mode[0];
-						int pos = 1;
+						size_t pos = 1;
 						while (pos < mode.length() && mode[pos] == sign) {
 							pos++;
 						}
@@ -932,6 +959,11 @@ void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 						{
 							logger.log(DEBUG, "Removing restricted connection mode ...");
 							cl->second.set_rest_conx(false);
+						}
+						else if (mode == "-o")
+						{
+							logger.log(DEBUG, "Removing server operator mode ...");
+							cl->second.setServerOper(false);
 						}
 						else
 							send_message(client.getFdNumber(), ERR_UMODEUNKNOWNFLAG(client.getNickname()));

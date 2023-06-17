@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/15 22:52:19 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/17 20:34:33 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,8 +103,10 @@ class irc_server{
 		void	INVITE(std::vector<std::string> request, Client& client); // saad
 		void	TOPIC(std::vector<std::string> request, Client& client); // saad
 		void	MODE(std::vector<std::string> request, Client& client); // saad mode for user, ayoub mode for channel
+		void	OPER(std::vector<std::string> request, Client& client);
 		void	NAMES(std::vector<std::string> request, Client& client);
 		std::vector<Channel>::iterator findChannelByName(std::string channel);
+		int is_present(std::vector<std::string> args, int index);
 		bool isoperator(std::map<std::string, Client&> operators, int userFd);
 		std::map<int, Client>::iterator findClient(std::string nickname);
 };

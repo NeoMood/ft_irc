@@ -77,7 +77,7 @@
 #define ERR_BADCHANMASK(nick, chan)     "476 " + nick + " " + chan + " :Bad Channel Mask\r\n"
 #define ERR_NOPRIVILEGES(nick)        "481 " + nick + " :Permission Denied- You're not an IRC operator\r\n"
 #define ERR_CHANOPRIVSNEEDED(chan)    "482 " + chan + " :You're not channel operator\r\n"
-#define ERR_UMODEUNKNOWNFLAG    "501"
+#define ERR_UMODEUNKNOWNFLAG(nick)    "501 " + nick + " :Unknown MODE flag\r\n"
 #define ERR_USERSDONTMATCH      "502 :Cannot change mode for other users\r\n"
 
 #define ERR_NOSUCHFILE(nick, filename) "991 " + nick + " " + filename + " :No such file\r\n"

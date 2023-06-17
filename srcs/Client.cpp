@@ -6,7 +6,7 @@
 /*   By: sgmira <sgmira@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/15 23:40:26 by sgmira           ###   ########.fr       */
+/*   Updated: 2023/06/17 20:45:15 by sgmira           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,14 @@ void Client::set_rest_conx(bool rest_conx){
 
 void Client::set_wallops(bool wallops){
     this->wallops = wallops;
+}
+
+void Client::setServerOper(bool isOper) {
+    this->_server_operator = isOper;
+}
+
+bool Client::isServerOper() const {
+    return this->_server_operator;
 }
 
 // Getters
