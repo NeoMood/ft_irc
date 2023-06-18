@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Utils.cpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/12 01:29:51 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 22:15:19 by ayoubaqlzim      ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../includes/Server.hpp"
 #include "../includes/Client.hpp"
 #include "../includes/Reply.hpp"
@@ -47,14 +35,14 @@ void	irc_server::welcome_message(int fd, std::string message){
 	write(fd, message.c_str(), message.length());
 }
 
-void	irc_server::get_date(void){
+void	irc_server::get_date(Client& client){
 	
 	time_t	t;
 	
 	struct tm* date;
 	time(&t);
 	date = localtime(&t);
-	send_message(0, RPL_CREATED(asctime(date)));
+	send_message(client.getFdNumber(), msg + RPL_CREATED(asctime(date), client.getNickname()));
 }
 
 bool irc_server::validateValue(std::string value) const {

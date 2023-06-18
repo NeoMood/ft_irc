@@ -136,6 +136,7 @@ std::string FileTransfer::downloadFile(std::string name, std::string sender, std
         }
         downloadedfile = sender + "_" + name + "_" + ss.str() + fmt;
         cmd = "curl -L  https://free.keep.sh/" + it->first + "/" + filename + " > " + downloadedfile;
+        std::cout << "files: " << cmd << "\n";
         FILE *fptr = popen(cmd.c_str(), "r");
         if (!fptr) {
             return "";

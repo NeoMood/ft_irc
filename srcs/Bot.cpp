@@ -2,8 +2,6 @@
 
 Bot *Bot::_instance = nullptr;
 
-// client_id: u-s4t2ud-0ffa9ea2d9a57c43add851af627d18c9bad19d543662eb62b6291859abe9e921
-// secret_id: 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
 
 Bot::Bot() {
     if (!std::getenv("CLIENT_ID") || !std::getenv("SECRET_ID")) {
@@ -190,7 +188,3 @@ Bot::~Bot() {
         _instance = nullptr;
     }
 }
-
-// curl -X POST --data "grant_type=client_credentials&client_id=u-s4t2ud-0ffa9ea2d9a57c43add851af627d18c9bad19d543662eb62b6291859abe9e921&client_secret=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" https://api.intra.42.fr/oauth/token
-
-// curl  -H "Authorization: Bearer e9fc1f6b87d59a441e92ece5b85e1af862253c40f07a7d2f5c6f4f5d5511b7b8" "https://api.intra.42.fr/v2/users/aaqlzim/locations_stats?begin_at=2023-06-01&end_at=2023-06-10"

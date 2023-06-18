@@ -1,16 +1,3 @@
-
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   client.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: yamzil <yamzil@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/12 00:35:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/05/23 13:12:32 by yamzil           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -39,6 +26,17 @@ typedef enum {
 
 } channel_mode_t;
 
+typedef enum
+{
+    u_i = 0, //Invisible
+    u_w = 1, //Receiving wallops
+    u_o = 2, //Operator
+    u_s = 3, //Secure connection
+    u_x = 4, //Cloaking disguises the user's actual IP address, replacing it with a generic or obfuscated address
+    u_D = 5, //allows the user to ignore all channel messages while still being connected to the channel
+    u_r = 6,
+} user_mode_t;
+
 class Client{
     private:
         bool    PasswordApproved;
@@ -55,6 +53,11 @@ class Client{
         int        _channels_count;
         bool       _server_operator;
         time_t joining_time;
+        std::vector<user_mode_t> user_mode;
+        bool disguised;
+        bool invisible;
+        bool wallops;
+        bool rest_conx;
     public:
         Client();
         ~Client();
@@ -89,4 +92,13 @@ class Client{
         void setJoiningTime(time_t time);
         time_t getJoiningTime() const;
         std::string getJoiningTimeAsString();
+        void setUserMode(user_mode_t _mode);
+        void set_disguised(bool disguised);
+        void set_invisible(bool invisible);
+        void set_wallops(bool wallops);
+        void set_rest_conx(bool rest_conx);
+        bool get_invisible(void);
+        bool get_wallops(void);
+        bool get_rest_conx(void);
+        std::vector<user_mode_t> get_user_mode(void);
 };

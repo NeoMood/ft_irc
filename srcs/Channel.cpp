@@ -10,16 +10,14 @@ Channel::Channel(std::string name, Client& _operator): __name(name), __topic(), 
     if (mask == "!") {
         __owner.setChannelMode(o);
     }
+    this->__operators.insert(std::pair<std::string, Client&>(_operator.getNickname(), _operator));
+    __has_owner = true;
 }
 
 bool Channel::isAnOperatorOrOwner(Client& clinet) {
-    if (!clinet.getNickname().compare(0, clinet.getNickname().length(), __owner.getNickname())) {
-        return true;
-    } else {
-        for (std::map<std::string, Client&>::iterator it = __operators.begin(); it != __operators.end(); it++) {
-            if (clinet.getNickname() == it->first) {
-                return true;
-            }
+    for (std::map<std::string, Client&>::iterator it = __operators.begin(); it != __operators.end(); it++) {
+        if (clinet.getNickname() == it->first) {
+            return true;
         }
     }
     return false;
@@ -61,14 +59,20 @@ int Channel::invite_user(Client& client) {
 }
 
 void Channel::buildJoinChannelRes(std::string msg, Client& client) {
-    std::string message = msg + RPL_TOPIC(client.getNickname(), __name);
-    std::string users = __owner.getNickname() + " ";
+    std::string message = ":" + client.getNickname() + "!" + client.getUserName() + "@" + msg.substr(msg.find(":")+1) + "JOIN " + __name + "\r\n";
+    std::string users;
     for (std::map<std::string, Client&>::iterator it = __users.begin(); it != __users.end(); it++) {
         users += it->first + " ";
     }
-    users = users.substr(0, users.find_last_of(" "));
+    for (std::map<std::string, Client&>::iterator u = __operators.begin(); u != __operators.end(); u++) {
+        if (__owner.getNickname() == u->second.getNickname() && __has_owner) {
+            users += "@" + u->second.getNickname();
+            break;
+        }
+
+    }
     message += msg + RPL_NAMREPLY(client.getNickname(), __name, users);
-    message += msg + RPL_ENDOFNAMES(__name);
+    message += msg + RPL_ENDOFNAMES(client.getNickname(), __name);
     write(client.getFdNumber(), message.c_str(), message.length());
 }
 
@@ -105,7 +109,15 @@ int Channel::join_user(std::string msg, std::string host, Client& client) {
 }
 
 void Channel::sendToAllUsers(Client& client, std::string message, bool sendToOwner) {
-    if (sendToOwner && client.getNickname() != __owner.getNickname())
+    bool found = false;
+    for (std::map<std::string, Client&>::iterator it = __operators.begin(); it != __operators.end(); it++) {
+        if (__owner.getNickname() == it->second.getNickname()) {
+            found = true;
+            break;
+        }
+    }
+    // if (sendToOwner && client.getNickname() != __owner.getNickname() && found)
+    if (found && sendToOwner)
         write(__owner.getFdNumber(), message.c_str(), message.length());
     for (std::map<std::string, Client&>::iterator it = __users.begin(); it != __users.end(); it++) {
         if (client.getNickname() != it->first)
@@ -115,6 +127,10 @@ void Channel::sendToAllUsers(Client& client, std::string message, bool sendToOwn
 
 std::map<std::string, Client&>  Channel::getUsers() {
     return this->__users;
+}
+
+std::map<std::string, Client&>  Channel::getOperators() {
+    return this->__operators;
 }
 
 bool Channel::hasUser(std::string nickname) {
@@ -149,6 +165,7 @@ void Channel::add_operator(Client& client) {
 
 void Channel::remove_operator(Client& client) {
     this->__operators.erase(client.getNickname());
+    __has_owner = false;
 }
 
 int Channel::unban_user(Client& client) {
@@ -194,8 +211,15 @@ int Channel::getUsersTotal() {
     return this->__users.size() + 1;
 }
 
-std::string Channel::getTopic() const {
+std::string Channel::getChannelTopic() const {
     return this->__topic;
+}
+
+void Channel::setChannelTopic(std::string topic){
+    this->__topic = topic;
+}
+bool Channel::hasOwner() const {
+    return __has_owner;
 }
 
 Channel::~Channel() {

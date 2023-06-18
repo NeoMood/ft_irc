@@ -91,21 +91,22 @@ void Request::parseRequest(std::string& line) {
         this->_cmd = line.substr(0, pos);
 		std::transform(this->_cmd.begin(), this->_cmd.end(), this->_cmd.begin(), ::toupper);
 		line.erase(0, pos + delim.length());
-		if (this->_cmd == "PASS" || this->_cmd == "NICK"
-			|| this->_cmd == "OPER" || this->_cmd == "WALLOPS"
+		if (this->_cmd == "PASS" || this->_cmd == "NICK" || this->_cmd == "WALLOPS"
 			|| this->_cmd == "WHOIS" || this->_cmd == "SPOT.NUTS"
-			|| this->_cmd == "SENDFILE" || this->_cmd == "GETFILE" || this->_cmd == "LISTFILE")
+			|| this->_cmd == "SENDFILE" || this->_cmd == "GETFILE"
+			|| this->_cmd == "LISTFILE" || this->_cmd == "PONG")
 			request.push_back(line.substr(0, line.length()));
 		else if (this->_cmd == "USER" || this->_cmd == "PRIVMSG"
 			|| this->_cmd == "TOPIC" || this->_cmd == "PART"
-			|| this->_cmd == "QUIT" || this->_cmd == "NOTICE"){
+			|| this->_cmd == "QUIT" || this->_cmd == "NOTICE"
+			|| this->_cmd == "OPER" || this->_cmd == "KICK"){
 			this->request = _split(line, delim);
 			join_strings(this->request);
 		}
 		else if (this->_cmd == "INVITE" || this->_cmd == "MODE"
 			|| this->_cmd == "LIST" || this->_cmd == "NAMES")
 			this->request = _split(line, delim);
-		else if (this->_cmd == "JOIN" || this->_cmd == "KICK"){
+		else if (this->_cmd == "JOIN"){
 			std::string delim = ",";
 			this->_request = _splitJOIN(line, delim);
 		}

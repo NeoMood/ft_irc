@@ -1,16 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   server.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 23:06:52 by ayoubaqlzim      ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -72,6 +59,8 @@ class irc_server{
 		bool isFile(const char* path);
 		bool checkChannelMask(char c);
 		std::vector<std::pair<int, Arg> > checkAction(std::string mode);
+		std::vector<std::pair<int, Arg> > checkUserAction(std::string mode);
+		bool checkUserMode(char c);
 		bool checkMode(char c);
 		std::vector<std::string> splitByDelm(std::string arg, std::string delm);
 		std::vector<Channel> findChannelsUserBelongTo(Client& client);
@@ -104,43 +93,46 @@ class irc_server{
 		bool check_param(const char *nickname, Client &client);
 		void ReusableSocket(void);
 		void non_blocking(void);
-	// UTILS FUNCTION
+
 		void	welcome_message(int fd, std::string message);
 		void	send_message(int fd, std::string message);
 		void	check_port(char **argv);
-		void	get_date(void);
-	//  COMMAND FUNCTION
-		void	JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client); // ayoub -> Done, left: handle error msgs
-		void	PASS(std::vector<std::string> request, Client &client); // yahya
-		void	NICK(std::vector<std::string> request, Client &client); // yahya
-		void	USER(std::vector<std::string> request, Client &client); // yahya
-		void	PRIVMSG(std::vector<std::string> request, Client& client); // ayoub send msg to channel and user -> Done, left: handle error msgs
-		void	KICK(std::vector<std::pair<std::string, std::string> > _request, Client& client); // ayoub -> Done
-		void	INVITE(std::vector<std::string> request, Client& client); // saad
-		void	TOPIC(std::vector<std::string> request, Client& client); // saad
-		void	MODE(std::vector<std::string> request, Client& client); // ayoub mode for channel -> done
+		void	get_date(Client& client);
 
-		void	PART(std::vector<std::string> request, Client& client); // -> PART #ch1,&ch2 :Leaving bye, DONE
-		void	NOTICE(std::vector<std::string> request, Client& client); // -> DONE
-		void	QUIT(std::vector<std::string> request, Client& client); // -> QUIT :Gone to have lunch, ERROR :Closing Link: hostname (Quit: Gone to have lunch), in channels :nickname!username@hostname QUIT :Hey, DONE
-		void	LIST(std::vector<std::string> request, Client& client); // -> LIST #ch1,&ch2 --> DONE
-		void	NAMES(std::vector<std::string> request, Client& client); // -> NAMES &ch1,#ch2 --> DONE
+		void	JOIN(std::vector<std::pair<std::string, std::string> > _request, Client& client);
+		void	PASS(std::vector<std::string> request, Client &client);
+		void	NICK(std::vector<std::string> request, Client &client);
+		void	USER(std::vector<std::string> request, Client &client);
+		void	PRIVMSG(std::vector<std::string> request, Client& client);
+		void	KICK(std::vector<std::string> _request, Client& client);
+		void	INVITE(std::vector<std::string> request, Client& client);
+		void	TOPIC(std::vector<std::string> request, Client& client);
+		void	MODE(std::vector<std::string> request, Client& client);
 
-		// =======================IN_PROGRESS========================================
-		void	OPER(std::vector<std::string> request, Client& client); // -> DONE
-		void	WALLOPS(std::vector<std::string> request, Client& client); // -> DONE
-		void	WHOIS(std::vector<std::string> request, Client& client); // -> DONE
-		void	SENDFILE(std::vector<std::string> request, Client& client); // -> done
-		void	GETFILE(std::vector<std::string> request, Client& client); // -> done
-		void	LISTFILE(std::vector<std::string> request, Client& client); // -> done
-		void	BOT(std::vector<std::string> request, Client& client); // DONE
-		// ========================================================================
+		void	PART(std::vector<std::string> request, Client& client);
+		void	NOTICE(std::vector<std::string> request, Client& client);
+		void	QUIT(std::vector<std::string> request, Client& client);
+		void	LIST(std::vector<std::string> request, Client& client);
+		void	NAMES(std::vector<std::string> request, Client& client);
+		void	PONG(std::vector<std::string> request, Client& client);
+
+		void	OPER(std::vector<std::string> request, Client& client);
+		void	WALLOPS(std::vector<std::string> request, Client& client);
+		void	WHOIS(std::vector<std::string> request, Client& client);
+		void	SENDFILE(std::vector<std::string> request, Client& client);
+		void	GETFILE(std::vector<std::string> request, Client& client);
+		void	LISTFILE(std::vector<std::string> request, Client& client);
+		void	BOT(std::vector<std::string> request, Client& client);
 		std::vector<Channel>::iterator findChannelByName(std::string channel);
 		std::map<int, Client>::iterator findClient(std::string nickname);
 		void add_mode(Client& client, std::vector<Channel>::iterator& it, std::pair<int, Arg> pair, std::vector<std::string> request);
 		void remove_mode(Client& client, std::vector<Channel>::iterator& it, std::pair<int, Arg> pair, std::vector<std::string> request);
 		std::map<std::string, Client&>::iterator findUser(std::map<std::string, Client&>& users, std::string nickname);
+		std::map<std::string, Client&>::iterator findOperator(std::map<std::string, Client&>& operators, std::string nickname);
 		int is_present(std::vector<std::string> args, int index);
 		std::string formatUserMessage(std::string nickname, std::string username, std::string hostname);
 		std::string getHostAddress();
+		void add_user_mode(Client& client, char mode);
+		void remove_user_mode(Client& client, char mode);
+		std::string buildMode(Client& client);
 };
