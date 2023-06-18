@@ -9,7 +9,7 @@
 #define RPL_YOURHOST(nick, host) "002 " + nick + " :Your host is " + host + "\r\n"
 #define RPL_CREATED(date)       std::string("003 :This server was created ") + date
 #define RPL_MYINFO              "004"
-
+#define RPL_UMODEIS(nick, modes) "221 " + nick + + " user mode is :" + modes + "\r\n"
 #define RPL_LUSERCLIENT         "251"
 #define RPL_LUSEROP             "252"
 #define RPL_LUSERUNKNOWN        "253"
@@ -35,8 +35,9 @@
 
 #define RPL_CHANNELMODEIS(chan, nick, mode, option)       "324 :" + nick + " MODE " + chan + " " + mode + " :" + option + "\r\n"
 
-#define RPL_NOTOPIC             "331"
-#define RPL_TOPIC(nick, chan) "332 " + nick + " " + chan + " :\r\n"
+#define RPL_NOTOPIC(nick, chan) "331 " + nick + " " + chan + " :No topic is set\r\n"
+#define RPL_TOPIC(nick, chan, topic) "332 " + nick + " " + chan + " :" + topic + "\r\n"
+#define RPL_INVITING(chan, nick) "341 " + chan + " client " + nick + " has been invited to the channel succesfully \r\n"
 
 #define RPL_NAMREPLY(nick, chan, users)  "353 " + nick + " = " + chan + " :@" + users + "\r\n"
 #define RPL_ENDOFNAMES(chan) "366 " + chan + " :End of NAMES list\r\n"
@@ -75,9 +76,10 @@
 #define ERR_BANNEDFROMCHAN(nick, chan)  "474 " + nick + " " + chan + " :Cannot join channel (+b)\r\n"
 #define ERR_BADCHANNELKEY(nick, chan)         "475 " + nick + " " + chan + " :Cannot join channel (+k)\r\n"
 #define ERR_BADCHANMASK(nick, chan)     "476 " + nick + " " + chan + " :Bad Channel Mask\r\n"
+#define ERR_NOCHANMODES(nick, chan)     "477 " + nick + " " + chan + " :Channel doesn't support modes\r\n"
 #define ERR_NOPRIVILEGES(nick)        "481 " + nick + " :Permission Denied- You're not an IRC operator\r\n"
 #define ERR_CHANOPRIVSNEEDED(chan)    "482 " + chan + " :You're not channel operator\r\n"
-#define ERR_UMODEUNKNOWNFLAG    "501"
+#define ERR_UMODEUNKNOWNFLAG(nick)    "501 " + nick + " :Unknown MODE flag\r\n"
 #define ERR_USERSDONTMATCH      "502 :Cannot change mode for other users\r\n"
 
 #define ERR_NOSUCHFILE(nick, filename) "991 " + nick + " " + filename + " :No such file\r\n"

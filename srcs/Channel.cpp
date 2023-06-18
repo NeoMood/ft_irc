@@ -61,7 +61,7 @@ int Channel::invite_user(Client& client) {
 }
 
 void Channel::buildJoinChannelRes(std::string msg, Client& client) {
-    std::string message = msg + RPL_TOPIC(client.getNickname(), __name);
+    std::string message = msg + RPL_TOPIC(client.getNickname(), __name, __topic);
     std::string users = __owner.getNickname() + " ";
     for (std::map<std::string, Client&>::iterator it = __users.begin(); it != __users.end(); it++) {
         users += it->first + " ";
@@ -194,8 +194,12 @@ int Channel::getUsersTotal() {
     return this->__users.size() + 1;
 }
 
-std::string Channel::getTopic() const {
+std::string Channel::getChannelTopic() const {
     return this->__topic;
+}
+
+void Channel::setChannelTopic(std::string topic){
+    this->__topic = topic;
 }
 
 Channel::~Channel() {

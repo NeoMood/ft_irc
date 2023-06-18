@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 16:46:26 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 23:07:35 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/18 13:55:16 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -350,7 +350,9 @@ void irc_server::PRIVMSG(std::vector<std::string> request, Client& client) {
 			pos = request[i].find(",");
 		}
 		if (request[i].find(":") == std::string::npos) {
-			targets += request[i].substr(0, request[i].find(" "));
+			pos = request[i].find(" ");
+			if (pos != std::string::npos)
+				targets += request[i].substr(0, pos);
 		}
 	}
 	if (too_may_args) {
@@ -365,9 +367,13 @@ void irc_server::PRIVMSG(std::vector<std::string> request, Client& client) {
 		send_message(client.getFdNumber(), msg + ERR_NOTEXTTOSEND());
 		return ;
 	}
+	std::string message = request[1];
+	if (message.find_first_of(":") == std::string::npos) {
+		message = ":" + request[1];
+	}
 	if (!checkChannelMask(request[0][0])) {
 		std::vector<Channel>::iterator it = findChannelByName(request[0]);
-		logger.log(DEBUG, "Send msg: " + request[1] + " To channel: |" + request[0] + "|");
+		logger.log(DEBUG, "Send msg: " + message + " To channel: |" + request[0] + "|");
 		if (it != channels.end()) {
 			std::map<std::string, Client&> users = it->getUsers();
 			std::map<std::string, Client&>::iterator u = findUser(users, client.getNickname());
@@ -375,17 +381,18 @@ void irc_server::PRIVMSG(std::vector<std::string> request, Client& client) {
 				send_message(client.getFdNumber(), msg + ERR_CANNOTSENDTOCHAN(client.getNickname(), request[0]));
 				return ;
 			}
-			std::cout << "users size: " << users.size() << std::endl;
-			if (client.getFdNumber() != it->getCreator().getFdNumber()) {
-				send_message(it->getCreator().getFdNumber(), formatUserMessage(client.getNickname(),
-						client.getUserName(), host) + "PRIVMSG " + request[0] + " " + request[1] + "\r\n");
-			}
-			for (std::map<std::string, Client&>::iterator it = users.begin(); it != users.end(); it++) {
-				if (client.getFdNumber() != it->second.getFdNumber()) {
-					send_message(it->second.getFdNumber(), formatUserMessage(client.getNickname(),
-						client.getUserName(), host) + "PRIVMSG " + request[0] + " " + request[1] + "\r\n");
-				}
-			}
+			// std::cout << "users size: " << users.size() << std::endl;
+			// if (client.getFdNumber() != it->getCreator().getFdNumber()) {
+			// 	send_message(it->getCreator().getFdNumber(), formatUserMessage(client.getNickname(),
+			// 			client.getUserName(), host) + "PRIVMSG " + request[0] + " " + message + "\r\n");
+			// }
+			it->sendToAllUsers(client, formatUserMessage(client.getNickname(), client.getUserName(), host) + "PRIVMSG " + request[0] + " " + message + "\r\n",true);
+			// for (std::map<std::string, Client&>::iterator it = users.begin(); it != users.end(); it++) {
+			// 	if (client.getFdNumber() != it->second.getFdNumber()) {
+			// 		send_message(it->second.getFdNumber(), formatUserMessage(client.getNickname(),
+			// 			client.getUserName(), host) + "PRIVMSG " + request[0] + " " + message + "\r\n");
+			// 	}
+			// }
 		} else {
 			send_message(client.getFdNumber(), msg + ERR_NOSUCHCHANNEL(request[0]));
 		}
@@ -393,7 +400,7 @@ void irc_server::PRIVMSG(std::vector<std::string> request, Client& client) {
 		std::map<int, Client>::iterator it = findClient(request[0]);
 		if (it != guest.end()) {
 			send_message(it->first, formatUserMessage(client.getNickname(),
-				client.getUserName(), host) + "PRIVMSG " + it->second.getNickname() + " " + request[1] + "\r\n");
+				client.getUserName(), host) + "PRIVMSG " + it->second.getNickname() + " " + message + "\r\n");
 		} else {
 			send_message(client.getFdNumber(), msg + ERR_NOSUCHNICK(client.getNickname(), request[0]));
 		}
@@ -451,42 +458,178 @@ void	irc_server::KICK(std::vector<std::pair<std::string, std::string> > _request
 	}
 }
 
-void	irc_server::INVITE(std::vector<std::string> request, Client& client) {
-	// Replies
+// void	irc_server::INVITE(std::vector<std::string> request, Client& client) {
+// 	// Replies
+// 	// ERR_NEEDMOREPARAMS              ERR_NOSUCHNICK
+// 	//    ERR_NOTONCHANNEL                ERR_USERONCHANNEL
+// 	//    ERR_CHANOPRIVSNEEDED
+// 	//    RPL_INVITING                    RPL_AWAY
+// 	logger.log(DEBUG, "invite command");
+// 	std::vector<Channel>::iterator it = findChannelByName(request[0]);
+// 	if (it != channels.end()) {
+// 		logger.log(DEBUG, "Channel found " + request[0]);
+// 		if (it->isAnOperatorOrOwner(client)) {
+// 			std::map<int, Client>::iterator u = findClient(request[1]);
+// 			if (u != guest.end()) {
+// 				if (u->first != client.getFdNumber()) {
+// 					it->invite_user(u->second);
+// 				} else {
+// 					send_message(client.getFdNumber(), "Can not invite your self\n");
+// 				}
+// 			} else {
+// 				send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
+// 			}
+// 		} else {
+// 			logger.log(DEBUG, "Action can not be permited");
+// 			return ;
+// 		}
+// 	} else {
+// 		logger.log(DEBUG, "Channel not found");
+// 		return ;
+// 	}
+// }
+
+void	irc_server::INVITE(std::vector<std::string> request, Client& client) 
+{	
 	// ERR_NEEDMOREPARAMS              ERR_NOSUCHNICK
-	//    ERR_NOTONCHANNEL                ERR_USERONCHANNEL
-	//    ERR_CHANOPRIVSNEEDED
-	//    RPL_INVITING                    RPL_AWAY
-	logger.log(DEBUG, "invite command");
-	std::vector<Channel>::iterator it = findChannelByName(request[0]);
-	if (it != channels.end()) {
-		logger.log(DEBUG, "Channel found " + request[0]);
-		if (it->isAnOperatorOrOwner(client)) {
-			std::map<int, Client>::iterator u = findClient(request[1]);
-			if (u != guest.end()) {
-				if (u->first != client.getFdNumber()) {
-					it->invite_user(u->second);
-				} else {
-					send_message(client.getFdNumber(), "Can not invite your self\n");
+	// ERR_NOTONCHANNEL                ERR_USERONCHANNEL
+	// ERR_CHANOPRIVSNEEDED
+	// RPL_INVITING                    RPL_AWAY
+	logger.log(DEBUG, "INVITE");
+	if(request.size() == 2)
+	{	
+		std::vector<Channel>::iterator it = findChannelByName(request[1]);
+		if(it != channels.end())
+		{
+			logger.log(DEBUG, "Found a channel!");
+			std::map<int, Client>::iterator cl = findClient(client.getNickname());
+			if(it->hasUser(cl->second.getNickname()))
+			{
+				std::map<int, Client>::iterator it2 = findClient(request[0]);
+				if (it2 != guest.end())
+				{ 
+					if(it->isInviteOnly())
+					{
+						logger.log(DEBUG, "This channel is Invite Only");
+						if(it->isAnOperatorOrOwner(client))
+						{
+							logger.log(DEBUG, "You're an Operator! You can Proceed ...");
+							if (it2->second.getNickname() != client.getNickname())
+							{
+								it->invite_user(it2->second);
+								send_message(client.getFdNumber(), msg + RPL_INVITING(request[1], request[0]));
+								send_message(it2->first, msg + std::string(client.getNickname() + " NOTICE :has sent you an invite\r\n"));
+							}
+							// else
+							// 	send_message(client.getFdNumber(), "You can't invite yourself\n");
+						}
+						else 
+							send_message(client.getFdNumber(), msg + ERR_CHANOPRIVSNEEDED(request[1]));
+						
+					}
+					// else if (it->hasUser(request[0]))
+					// {
+					// 	logger.log(DEBUG, "User is already a member of this channel");
+					// 	send_message(client.getFdNumber(), msg + ERR_USERONCHANNEL(request[0], request[1])); 
+					// }
+					// else if (!it->hasUser(request[0]) && it->getUserLimit() != -1 && it->getUsersTotal() >= it->getUserLimit()) 
+					// 	send_message(client.getFdNumber(), msg + ERR_CHANNELISFULL(client.getNickname(), it->getChannelName()));
+					// else
+					// {
+					// 	if (it2->second.getNickname() != client.getNickname())
+					// 	{
+					// 		it->invite_user(it2->second);
+					// 		send_message(client.getFdNumber(), msg + RPL_INVITING(request[1], request[0]));
+					// 	}
+					// 	else
+					// 		send_message(client.getFdNumber(), "You can't invite yourself\n");
+					// }
 				}
-			} else {
-				send_message(client.getFdNumber(), ERR_NOSUCHNICK(request[1], request[0]));
+				else
+					send_message(client.getFdNumber(), msg + ERR_NOSUCHNICK(request[1], request[0]));
 			}
-		} else {
-			logger.log(DEBUG, "Action can not be permited");
-			return ;
+			else
+				send_message(client.getFdNumber(), msg + ERR_NOTONCHANNEL(it->getChannelName()));
 		}
-	} else {
-		logger.log(DEBUG, "Channel not found");
-		return ;
+		else
+			send_message(client.getFdNumber(), msg + ERR_NOSUCHNICK(request[1], request[0]));
 	}
+	else
+		send_message(client.getFdNumber(), msg + ERR_NEEDMOREPARAMS(std::string("INVITE"), client.getNickname()));
+	return ;
 }
 
-void	irc_server::TOPIC(std::vector<std::string> request, Client& client) {
-	(void) request;
-	(void) client;
-	logger.log(DEBUG, "topic command");
+void	irc_server::TOPIC(std::vector<std::string> request, Client& client)
+{
+	//    ERR_NEEDMOREPARAMS              ERR_NOTONCHANNEL
+    //    RPL_NOTOPIC                     RPL_TOPIC
+    //    ERR_CHANOPRIVSNEEDED            ERR_NOCHANMODES	
+	logger.log(DEBUG, "TOPIC");
+	
+	if (!is_present(request, 0)) {
+		send_message(client.getFdNumber(), msg + ERR_NEEDMOREPARAMS(std::string("TOPIC"), client.getNickname()));
+		return ;
+	}
+	std::vector<Channel>::iterator it = findChannelByName(request[0]);
+	if(it != channels.end())
+	{	
+		if(it->hasUser(client.getNickname()))
+		{
+			if (!it->getSupportTopic()) {
+				send_message(client.getFdNumber(), msg + ERR_NOCHANMODES(client.getNickname(), it->getChannelName()));
+				return;
+			}
+			if(it->isAnOperatorOrOwner(client))
+			{
+				if(!is_present(request, 1) || request[1].empty())
+				{
+					if(it->getChannelTopic().empty())
+						logger.log(DEBUG, "Channel " + request[0] + " has no topic yet");
+					else
+					{
+						logger.log(DEBUG, "user " + client.getNickname() + " checking topic for Channel " + request[0]);
+						std::cout << "- " << it->getChannelTopic() << std::endl;
+					}
+					send_message(client.getFdNumber(), msg + RPL_TOPIC(client.getNickname(), it->getChannelName(), it->getChannelTopic()));
+				}
+				else
+				{
+					if(request[1][0] == ':')
+					{
+						logger.log(DEBUG, "Found token!");
+						if(request[1][1])
+						{
+							it->setChannelTopic(&request[1][1]);
+							// send_message(client.getFdNumber(), msg + RPL_TOPIC(client.getNickname(), it->getChannelName(), it->getChannelTopic()));
+							it->sendToAllUsers(client, msg + RPL_TOPIC(client.getNickname(), it->getChannelName(), it->getChannelTopic()), true);
+							logger.log(DEBUG, "user " + client.getNickname() + " setting topic for Channel " + request[0] + " to " + it->getChannelTopic());
+						}
+						else
+						{
+							it->setChannelTopic("");
+							// send_message(client.getFdNumber(), msg + RPL_NOTOPIC(client.getNickname(), it->getChannelName()));
+							it->sendToAllUsers(client, msg + RPL_NOTOPIC(client.getNickname(), it->getChannelName()), true);
+							logger.log(DEBUG, "user " + client.getNickname() + " cleared topic for " + request[0]);
+						}
+					}
+				}
+			}
+			else {
+				if (request[1][0] == ':') {
+					send_message(client.getFdNumber(), msg + ERR_CHANOPRIVSNEEDED(it->getChannelName()));
+					return;
+				}
+				send_message(client.getFdNumber(), msg + RPL_TOPIC(client.getNickname(), it->getChannelName(), it->getChannelTopic()));
+			}
+		}
+		else
+			send_message(client.getFdNumber(), msg + ERR_NOTONCHANNEL(it->getChannelName()));
+	}
+	else
+		logger.log(DEBUG, "Channel Not found");
+	return ;
 }
+
 // curl --upload-file ./txt https://free.keep.sh
 // output: https://free.keep.sh/Y8v3dw9XxotVpTgV/txt
 
@@ -571,6 +714,10 @@ void	irc_server::BOT(std::vector<std::string> request, Client& client) {
 
 void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 	logger.log(DEBUG, "mode command");
+	if (!is_present(request, 0)) {
+		send_message(client.getFdNumber(), msg + ERR_NEEDMOREPARAMS(std::string("MODE"), client.getNickname()));
+		return;
+	}
 	if (request[0][0] == '#' || request[0][0] == '+' || request[0][0] == '!' || request[0][0] == '&') {
 		logger.log(DEBUG, "Basic implementation of mode operations on channels");
 		// channel mode
@@ -625,7 +772,97 @@ void	irc_server::MODE(std::vector<std::string> request, Client& client) {
 		}
 	}
 	else {
-		// USER MODE
+// ERR_NEEDMOREPARAMS              ERR_USERSDONTMATCH
+		// ERR_UMODEUNKNOWNFLAG            RPL_UMODEIS
+		logger.log(DEBUG, "Basic implementation of mode operations on users");
+		std::map<int, Client>::iterator cl = findClient(request[0]);
+		if (cl != guest.end()) 
+		{
+			if(request[0] != client.getNickname()) {
+				send_message(client.getFdNumber(), msg + ERR_USERSDONTMATCH);
+			}
+			else if (is_present(request, 1)) {
+				std::vector<std::pair<int, Arg> > actions = checkUserAction(request[1]);
+				for (size_t i = 0; i < actions.size(); i++) {
+					std::pair<int, Arg> pair = actions[i];
+					std::cout << "mode: " << pair.first << " action: " << pair.second.getChar() << "\n";
+					if (pair.first == E_UNKNOWN) {
+						send_message(client.getFdNumber(), msg + ERR_UMODEUNKNOWNFLAG(client.getNickname()));
+					} else if (pair.first == E_ADD) {
+						add_user_mode(client, pair.second.getChar());
+					} else {
+						remove_user_mode(client, pair.second.getChar());
+					}
+				}
+			} else {
+				send_message(client.getFdNumber(), msg + RPL_UMODEIS(client.getNickname(), buildMode(client)));
+			}
+		}
+	}
+}
+
+std::string irc_server::buildMode(Client& client) {
+	std::string mode;
+	if (client.get_invisible())
+		mode += "+i,";
+	else
+		mode += "-i,";
+	if (client.get_wallops())
+		mode += "+w,";
+	else
+		mode += "-w,";
+	if (client.isServerOper())
+		mode += "+o,";
+	else
+		mode += "-o,";
+	if (client.get_rest_conx())
+		mode += "+r,";
+	else
+		mode += "-r,";
+	mode = mode.substr(0, mode.find_last_of(","));
+	return mode;
+}
+
+void irc_server::add_user_mode(Client& client, char mode) {
+	if (mode == 'i') {
+		logger.log(DEBUG, "Adding invisible mode ...");
+		client.set_invisible(true);
+		client.get_user_mode().push_back(u_i);
+	}
+	else if (mode == 'w')
+	{
+		logger.log(DEBUG, "Adding recieve wallops mode ...");
+		client.set_wallops(true);
+		client.get_user_mode().push_back(u_w);
+	}
+	else if (mode == 'r')
+	{
+		logger.log(DEBUG, "Adding restricted connection mode ...");
+		client.set_rest_conx(true);
+		client.get_user_mode().push_back(u_r);
+	}
+	else if (mode == 'o')
+		return;
+}
+
+void irc_server::remove_user_mode(Client& client, char mode) {
+	if (mode == 'i') {
+		logger.log(DEBUG, "Removing invisible mode ...");
+		client.set_invisible(false);
+	}
+	else if (mode == 'w')
+	{
+		logger.log(DEBUG, "Removing recieve wallops mode ...");
+		client.set_wallops(false);
+	}
+	else if (mode == 'r')
+	{
+		logger.log(DEBUG, "Removing restricted connection mode ...");
+		client.set_rest_conx(false);
+	}
+	else if (mode == 'o') {
+		logger.log(DEBUG, "Removing server operator mode ...");
+		client.setServerOper(false);
 	}
 }
 
@@ -826,6 +1063,10 @@ void irc_server::NOTICE(std::vector<std::string> request, Client& client) {
 		send_message(client.getFdNumber(), msg + ERR_NOTEXTTOSEND());
 		return ;
 	}
+	std::string message = request[1];
+	if (message.find_first_of(":") == std::string::npos) {
+		message = ":" + request[1];
+	}
 	if (!checkChannelMask(request[0][0])) {
 		std::vector<Channel>::iterator it = findChannelByName(request[0]);
 		logger.log(DEBUG, "Send msg: " + request[1] + " To channel: |" + request[0] + "|");
@@ -838,16 +1079,17 @@ void irc_server::NOTICE(std::vector<std::string> request, Client& client) {
 			}
 			std::cout << "users size: " << users.size() << std::endl;
 			// ========================================================================================
-			if (client.getFdNumber() != it->getCreator().getFdNumber()) {
-				send_message(it->getCreator().getFdNumber(), formatUserMessage(client.getNickname(),
-						client.getUserName(), host) + "PRIVMSG " + request[0] + " " + request[1] + "\r\n");
-			}
-			for (std::map<std::string, Client&>::iterator it = users.begin(); it != users.end(); it++) {
-				if (client.getFdNumber() != it->second.getFdNumber()) {
-					send_message(it->second.getFdNumber(), formatUserMessage(client.getNickname(),
-						client.getUserName(), host) + "NOTICE " + request[0] + " " + request[1] + "\r\n");
-				}
-			}
+			// if (client.getFdNumber() != it->getCreator().getFdNumber()) {
+			// 	send_message(it->getCreator().getFdNumber(), formatUserMessage(client.getNickname(),
+			// 			client.getUserName(), host) + "PRIVMSG " + request[0] + " " + request[1] + "\r\n");
+			// }
+			it->sendToAllUsers(client, formatUserMessage(client.getNickname(), client.getUserName(), host) + "NOTICE " + request[0] + " " + message + "\r\n",true);
+			// for (std::map<std::string, Client&>::iterator it = users.begin(); it != users.end(); it++) {
+			// 	if (client.getFdNumber() != it->second.getFdNumber()) {
+			// 		send_message(it->second.getFdNumber(), formatUserMessage(client.getNickname(),
+			// 			client.getUserName(), host) + "NOTICE " + request[0] + " " + request[1] + "\r\n");
+			// 	}
+			// }
 		} else {
 			send_message(client.getFdNumber(), msg + ERR_NOSUCHCHANNEL(request[0]));
 		}
@@ -855,7 +1097,7 @@ void irc_server::NOTICE(std::vector<std::string> request, Client& client) {
 		std::map<int, Client>::iterator it = findClient(request[0]);
 		if (it != guest.end()) {
 			send_message(it->first, formatUserMessage(client.getNickname(),
-				client.getUserName(), host) + "NOTICE " + it->second.getNickname() + " " + request[1] + "\r\n");
+				client.getUserName(), host) + "NOTICE " + it->second.getNickname() + " " + message + "\r\n");
 		} else {
 			send_message(client.getFdNumber(), msg + ERR_NOSUCHNICK(client.getNickname(), request[0]));
 		}
@@ -866,7 +1108,7 @@ void irc_server::LIST(std::vector<std::string> request, Client& client) {
 	if (request.empty()) {
 		std::string rpl = formatUserMessage(client.getNickname(), client.getUserName(), host);
 		for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++) {
-			send_message(client.getFdNumber(), rpl + RPL_LIST(it->getChannelName(), it->getTopic()));
+			send_message(client.getFdNumber(), rpl + RPL_LIST(it->getChannelName(), it->getChannelTopic()));
 		}
 		send_message(client.getFdNumber(), rpl + RPL_LISTEND(client.getNickname()));
 	} else {
@@ -875,7 +1117,7 @@ void irc_server::LIST(std::vector<std::string> request, Client& client) {
 		for (size_t i = 0; i < args.size(); i++) {
 			std::vector<Channel>::iterator it = findChannelByName(args[i]);
 			if (it != channels.end()) {
-				send_message(client.getFdNumber(), rpl + RPL_LIST(it->getChannelName(), it->getTopic()));
+				send_message(client.getFdNumber(), rpl + RPL_LIST(it->getChannelName(), it->getChannelTopic()));
 			}
 		}
 		send_message(client.getFdNumber(), rpl + RPL_LISTEND(client.getNickname()));
@@ -925,9 +1167,10 @@ void irc_server::NAMES(std::vector<std::string> request, Client& client) {
 			if (it != channels.end()) {
 				std::map<std::string, Client&> users = it->getUsers();
 				// check if user is not invisible
-				std::string rpl = it->getCreator().getNickname() + " ";
+				std::string rpl = it->getCreator().get_invisible() ? it->getCreator().getNickname() + " " : "";
 				for (std::map<std::string, Client&>::iterator u = users.begin(); u != users.end(); u++) {
-					rpl += u->first + " ";
+					if (u->second.get_invisible())
+						rpl += u->first + " ";
 				}
 				send_message(client.getFdNumber(), msg + RPL_NAMREPLY(client.getNickname(), it->getChannelName(), rpl));
 				send_message(client.getFdNumber(), msg + RPL_ENDOFNAMES(it->getChannelName()));
@@ -967,7 +1210,8 @@ void irc_server::WALLOPS(std::vector<std::string> request, Client& client) {
 		for (std::map<int, Client>::iterator it = guest.begin(); it != guest.end(); it++) {
 			// check wallops user
 			if (it->second.getFdNumber() != client.getFdNumber()) {
-				send_message(it->first, rpl + it->second.getNickname() + " " +param + "\r\n");
+				if (it->second.get_wallops())
+					send_message(it->first, rpl + it->second.getNickname() + " " +param + "\r\n");
 			}
 		}
 	}
@@ -1126,7 +1370,38 @@ std::string irc_server::formatUserMessage(std::string nickname, std::string user
 }
 
 bool irc_server::checkMode(char c) {
-	return (c != 'k' && c != 'i' && c != 'l' && c != 'o');
+	return (c != 'k' && c != 'i' && c != 'l' && c != 'o' && c != 't');
+}
+
+bool irc_server::checkUserMode(char c) {
+	return (c != 'w' && c != 'r' && c != 'o' && c != 'i');
+}
+
+std::vector<std::pair<int, Arg> > irc_server::checkUserAction(std::string mode) {
+	std::vector<std::pair<int, Arg> > vec;
+	char prev = mode[0] == '+' ? '+' : mode[0] != '-' ? '+' : '-';
+	size_t i = 0;
+	size_t j = 0;
+	while (i < mode.length()) {
+		if (checkUserMode(mode[i])) {
+			j += 1;
+			prev = mode[i];
+			if (prev != '+' && prev != '-') {
+				Arg arg = Arg(prev, i - j);
+				vec.push_back(std::pair<int, Arg>(E_UNKNOWN, arg));
+			}
+			// std::cout << "prev: " << prev << std::endl;
+			i++;
+		} else {
+			// +k-i
+			Arg arg = Arg(mode[i], i - j);
+			// if (i != 0)
+			// 	prev = (mode[i - 1] != '-' && mode[i - 1] != '+') && (mode[i] != '+' && mode[i] != '-') ? '+' : prev;
+			vec.push_back(std::pair<int, Arg>(prev == '+' ? E_ADD : prev == '-' ? E_REMOVE : E_UNKNOWN, arg));
+			i++;
+		}
+	}
+	return vec;
 }
 
 std::vector<std::pair<int, Arg> > irc_server::checkAction(std::string mode) {

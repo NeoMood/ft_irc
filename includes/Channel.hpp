@@ -44,6 +44,7 @@ class Channel {
         void setInviteOnly(bool inviteOnly);
         void setChannelKey(std::string key);
         void setChannelLimit(int lmt);
+        void setChannelTopic(std::string topic);
         bool is_already_join(Client& client);
         bool isAnOperatorOrOwner(Client& clinet);
         int join_user(std::string msg, std::string host, Client& client);
@@ -64,6 +65,6 @@ class Channel {
         void sendToAllUsers(Client& client, std::string message, bool sendToOwner);
         void setSupportTopic(bool support);
         bool getSupportTopic() const;
-        std::string getTopic() const;
+        std::string getChannelTopic() const;
         ~Channel();
 };

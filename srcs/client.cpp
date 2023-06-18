@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/12 00:56:36 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 23:06:03 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/18 13:09:54 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,4 +137,41 @@ std::string Client::getJoiningTimeAsString() {
     std::stringstream ss;
     ss << joining_time;
     return ss.str();
+}
+
+void Client::set_disguised(bool disguised){
+    this->disguised = disguised;
+}
+
+void Client::set_invisible(bool invisible){
+    this->invisible = invisible;
+}
+
+void Client::set_rest_conx(bool rest_conx){
+    this->rest_conx = rest_conx;
+}
+
+void Client::set_wallops(bool wallops){
+    this->wallops = wallops;
+}
+
+void    Client::setUserMode(user_mode_t _mode) {
+    user_mode.push_back(_mode);
+}
+
+bool Client::get_invisible(void){
+    return (this->invisible);
+}
+
+bool Client::get_wallops(void){
+    return (this->wallops);
+}
+
+bool Client::get_rest_conx(void){
+    return (this->rest_conx);
+}
+
+std::vector<user_mode_t> Client::get_user_mode(void)
+{
+    return (this->user_mode);
 }

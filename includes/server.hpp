@@ -6,7 +6,7 @@
 /*   By: ayoubaqlzim <ayoubaqlzim@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/17 21:12:21 by yamzil            #+#    #+#             */
-/*   Updated: 2023/06/11 23:06:52 by ayoubaqlzim      ###   ########.fr       */
+/*   Updated: 2023/06/18 13:44:45 by ayoubaqlzim      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,8 @@ class irc_server{
 		bool isFile(const char* path);
 		bool checkChannelMask(char c);
 		std::vector<std::pair<int, Arg> > checkAction(std::string mode);
+		std::vector<std::pair<int, Arg> > checkUserAction(std::string mode);
+		bool checkUserMode(char c);
 		bool checkMode(char c);
 		std::vector<std::string> splitByDelm(std::string arg, std::string delm);
 		std::vector<Channel> findChannelsUserBelongTo(Client& client);
@@ -143,4 +145,7 @@ class irc_server{
 		int is_present(std::vector<std::string> args, int index);
 		std::string formatUserMessage(std::string nickname, std::string username, std::string hostname);
 		std::string getHostAddress();
+		void add_user_mode(Client& client, char mode);
+		void remove_user_mode(Client& client, char mode);
+		std::string buildMode(Client& client);
 };
